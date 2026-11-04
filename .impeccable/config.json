@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "/Users/pavel/work/COURSE/html_web_courses_en/EN_Сценарий_ RAG на LangChain + LangGraph + Chroma.html"
+        ],
+        "createdAt": "2026-10-31T11:55:46.437Z",
+        "reason": "Intentional narration-block left accent in existing course script UI; kept as designed for spoken-script readability."
+      }
+    ]
+  }
+}

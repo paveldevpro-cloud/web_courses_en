@@ -87,6 +87,16 @@
         color: var(--ac);
         margin: 0.8em 0 0.3em;
       }
+      h3.step {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--tx);
+        margin: 1.4em 0 0.55em;
+        padding: 8px 12px;
+        background: var(--say);
+        border-left: 4px solid var(--ac);
+        border-radius: 6px;
+      }
       .say {
         background: var(--say);
         border-left: 4px solid var(--ac);
@@ -167,40 +177,58 @@
       </p>
       <nav id="nav"></nav>
 
-      <section id="b0">
-        <h2>Block 0. Setup: uv, FastAPI, dependencies</h2>
+      <section id="intro">
         <div class="say">
           <b class="t">Narration · Intro and hook</b>
           <p>
-            <b>Hook.</b> Imagine you ask ChatGPT about your internal docs, and
-            it answers confidently — while making everything up. Sound familiar?
-            That’s called “hallucination,” and it’s exactly why companies are
-            afraid to trust chatbots with their data.
+            <b>Hook.</b> Imagine you ask ChatGPT about your internal documents
+            and it answers confidently. That’s called “hallucination”, because
+            Chat gpt can't access your personal data. Big companies are
+            restricted to give ChatGpt personal information, like your credit
+            card number, social security number, because it is illegal. It's a
+            big problem in the industry and it's not easy to solve.
           </p>
           <p>
-            Now picture something else: a bot that answers <i>only</i> from your
-            documents, honestly says “I don’t know” when the answer isn’t there,
-            and also shows where it got the information. It runs locally on your
-            laptop, with no token fees. That’s the system we’ll build in this
-            video — about a hundred lines of code.
+            In this course we will build a system that will answer questions
+            from your documents or personal information, honestly says “I don’t
+            know” when the answer isn’t there, and also shows where it got the
+            information. It runs locally on your laptop and it will be free of
+            charge.
           </p>
           <p>
-            My name is [NAME], and I’ll be your mentor. We’ll go all the way:
+            My name is Pavel, and I’ll be your instructor. We’ll go all the way:
             load a page from the internet, split it into chunks, turn them into
             vectors, store them in a database, find the right pieces by meaning,
             and assemble the answer with LangGraph. If you’re a junior — don’t
-            worry, I’ll explain every line. If you’re a mid-level engineer —
-            I’ll separately call out the pitfalls that show up in production.
+            worry, I’ll explain every line.
           </p>
           <p>
-            You’ll need a computer, basic Python, and curiosity. Let’s start
-            with the environment. While you’re installing — a quick question:
-            what do you think breaks most often in RAG? I’ll answer at the end.
+            You’ll need a computer, basic Python knowledge. Let’s get started.
           </p>
         </div>
-        <p><b>1. Install uv</b></p>
+      </section>
+
+      <section id="b0">
+        <h2>Block 0. Setup: uv, FastAPI, dependencies</h2>
+
+        <h3 class="step">1. Install uv</h3>
+        <div class="say">
+          <b class="t">Narration</b>
+          <p>
+            Okay, guys, let's get started. first of all Create main.py file, and
+            copy everything from the plan file and install all necessary
+            dependencies. For this purpose, we gonna use uv package manager.
+            It's a modern and fast package manager for Python. If you don't have
+            it, check the official documentation and install it. using this
+            link:
+          </p>
+        </div>
         <div class="cb">
           <span class="lang">bash</span>
+          <pre><code>https://docs.astral.sh/uv/getting-started/installation/</code></pre>
+        </div>
+        <br />
+        <div class="cb">
           <pre><code># macOS / Linux
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
@@ -210,228 +238,250 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 # check
 uv --version</code></pre>
         </div>
+        <h3 class="step">2. Initiate the project</h3>
         <div class="say">
-          <b class="t"></b>
+          <b class="t">Narration</b>
           <p>
-            Let’s start with <code>uv</code>. It’s a modern package and project
-            manager for Python, written in Rust, so it’s much faster than the
-            usual pip. It creates the virtual environment, installs
-            dependencies, and writes them into the project file, so you and your
-            teammates get the same setup. The first command downloads the
-            installer and runs it — for macOS and Linux. On Windows, PowerShell
-            does the same. The last command simply checks that uv is available.
-            If the terminal says “command not found” — close it and open it
-            again.
+            Now use two commands: uv init to initiate our project and uv python
+            install downloads the Python version you need if you don’t have it.
+            The command <code> uv init </code>creates a new project folder:
+            you’ll get pyproject.toml ,it is kind of the project passport with
+            the dependency list.
           </p>
         </div>
-        <p><b>2. Create the project</b></p>
         <div class="cb">
           <span class="lang">bash</span>
-          <pre><code>uv init rag-course
-cd rag-course
+          <pre><code>uv init
 uv python install 3.12</code></pre>
         </div>
+        <h3 class="step">3. Install FastAPI and dependencies</h3>
         <div class="say">
-          <b class="t"></b>
+          <b class="t">Narration</b>
           <p>
-            The command <code>uv init rag-course</code> creates a new project
-            folder: you’ll get <code>pyproject.toml</code> — the project
-            passport with the dependency list — and <code>main.py</code>. We’ll
-            paste the code from the next blocks into <code>main.py</code>. Then
-            <code>cd rag-course</code> enters the folder, and
-            <code>uv python install 3.12</code> downloads the Python version you
-            need if you don’t have it. No need to hunt installers on a website —
-            uv handles that.
+            Now let's install fast api and all dependensies such as langGraph
+            and langСhain, that we need to build our RAG pipeline and ai agents.
           </p>
         </div>
-        <p><b>3. Install FastAPI and dependencies</b></p>
+        <div class="say">
+          <b class="t">Narration</b>
+          <p>
+            The <code>uv add</code> command installs a package and immediately
+            writes it to <code>pyproject.toml</code>. First we install FastAPI.
+          </p>
+        </div>
         <div class="cb">
           <span class="lang">bash</span>
-          <pre><code>uv add "fastapi[standard]"
-
-uv add langchain-chroma langchain-core langchain-openai \
+          <pre><code>uv add "fastapi[standard]"</code></pre>
+        </div>
+        <div class="say">
+          <b class="t">Narration</b>
+          <p>
+            The second command is everything for RAG. we will disscuss all these
+            packages later”
+          </p>
+        </div>
+        <div class="cb">
+          <span class="lang">bash</span>
+          <pre><code>uv add langchain-chroma langchain-core langchain-openai \
        langchain-text-splitters langgraph \
        requests beautifulsoup4 python-dotenv</code></pre>
         </div>
+        <h3 class="step">4. Local models (Ollama) and the .env file</h3>
         <div class="say">
-          <b class="t"></b>
+          <b class="t">Narration</b>
           <p>
-            Now the dependencies. The <code>uv add</code> command installs a
-            package and immediately writes it to <code>pyproject.toml</code>.
-            First we install FastAPI — a web framework. Today our script runs in
-            the console, but in the next video we’ll turn it into a real API, so
-            we install it early; the <code>[standard]</code> extra includes the
-            server for running it. The second command is everything for RAG.
-            <code>langchain-chroma</code> — connection to the Chroma vector
-            store. <code>langchain-core</code> — core LangChain objects.
-            <code>langchain-openai</code> — an OpenAI-protocol model client that
-            also works with Ollama. <code>langchain-text-splitters</code> —
-            text splitting. <code>langgraph</code> — the step graph.
-            <code>requests</code> and <code>beautifulsoup4</code> — download a
-            page and extract its text. <code>python-dotenv</code> — reading the
-            settings file. A backslash at the end of a line means “the command
-            continues on the next line.”
+            If you still haven’t installed Ollama, follow the installation guide
+            for your operating system using this link:
+            <a href="https://ollama.com/download/linux" target="_blank"
+              >https://ollama.com/download/linux</a
+            >
+            Ollama is an open-source software platform that lets you download,
+            run, (LLMs) directly on your own computer.
+          </p>
+          <p>
+            Next, use this commands to download two models. The first model
+            <code>llama3.1</code> is the “writer”: it will give us the final
+            answer. The second model: <code>nomic-embed-text</code>
+            is the “translator from meaning into numbers or vectors into our
+            database”. These are two different jobs, that is why we use two
+            different models.
           </p>
         </div>
-        <p><b>4. Local models (Ollama) and the .env file</b></p>
-        If you still haven’t installed Ollama, follow the install guide for your
-        operating system:
-        <a href="https://ollama.com/download/linux" target="_blank"
-          >https://ollama.com/download/linux</a
-        >
         <div class="cb">
           <span class="lang">bash</span>
           <pre><code>ollama pull llama3.1
 ollama pull nomic-embed-text</code></pre>
         </div>
+        <div class="say">
+          <b class="t">Narration</b>
+          <p>Now let's put this models into the environment variables.</p>
+        </div>
         <div class="cb">
           <span class="lang">.env</span>
-          <pre><code>SOURCE_URL=https://aismartcode.vercel.app/
-LLM_API_BASE=http://127.0.0.1:11434/v1
+          <pre><code>CHAT_MODEL=llama3.1
+EMBEDDING_MODEL=nomic-embed-text
+SOURCE_URL=https://aismartcode.vercel.app/
 LLM_API_KEY=ollama
-CHAT_MODEL=llama3.1
-EMBEDDING_MODEL=nomic-embed-text</code></pre>
+LLM_API_BASE=http://127.0.0.1:11434/v1</code></pre>
         </div>
         <div class="say">
-          <b class="t"></b>
+          <b class="t">Narration</b>
           <p>
-            Next, local models via Ollama — make sure the app is installed and
-            running. We download two models. <code>llama3.1</code> is the
-            “writer”: it drafts the final answer. <code>nomic-embed-text</code>
-            is the “translator from meaning into numbers”: it turns text into a
-            vector. These are two different jobs, so we use two models.
+            Create the <code>.env</code> file in the project root. and copy this
+            settings. For the <code>SOURCE_URL</code> I use a page from my web
+            site, and I recommend you to use the same URL to have the same
+            result as mine. Later, you can change it to your own link.
           </p>
-          <p>
-            Create the <code>.env</code> file in the project root. These are our
-            settings: API address, a placeholder key, and model names. Note
-            <code>SOURCE_URL</code>: I use a page from my site, and for this
-            project you should use the same URL — then your answers will match
-            mine and we’ll stay in sync. Once you’ve got it, you can swap in any
-            site of your own.
-          </p>
-          <p>
-            <b>For mid-level:</b> always add <code>.env</code> to
-            <code>.gitignore</code> — when you move to cloud models, real keys
-            will live there.
-          </p>
-        </div>
-        <p><b>5. Run commands (you’ll need these at the end)</b></p>
-        <div class="cb">
-          <span class="lang">bash</span>
-          <pre><code>uv run main.py index   # indexing
-uv run main.py         # Q&amp;A
-# later, for FastAPI: uv run fastapi dev main.py</code></pre>
         </div>
       </section>
 
       <section id="b1">
-        <h2>Block 1. Imports</h2>
+        <h2>Block 1. Import Libraries</h2>
+
         <div class="say">
           <b class="t">Narration</b>
           <p>
-            Before we write code, let’s get the logic — it’s simple. RAG means
-            Retrieval-Augmented Generation. It works in two phases.
-            <b>Indexing</b>: take a document, split it into chunks, turn them
-            into vectors, and put them in a store. Done once. <b>Answering</b>:
-            for a question, find the most similar chunks and give them to the
-            model as context — like a cheat sheet for an exam. We import all the
-            tools for this at the top of the file.
+            The next step is to import all necessary libraries that we need to
+            build our RAG pipeline and ai agents.
+          </p>
+          <ul>
+            <li>
+              Python standard library for typing, hashing and working with
+              system functions
+            </li>
+            <li>
+              Third-party libraries for HTTP requests, HTML parsing and loading
+              API keys from .env file that we already created.
+            </li>
+            <li>
+              And the last block of libraries is LangChain / LangGraph for
+              building the RAG pipeline and ai agents
+            </li>
+          </ul>
+          <p>
+            Copy all of them, because later we will use everything from this
+            list.
           </p>
         </div>
         <div class="cb">
           <span class="lang">python</span>
-          <pre><code>import hashlib
-import os
-import sys
-from typing import TypedDict
+          <pre><code>#1. Python standard library:
+import hashlib   # hashing (for document IDs)
+import os        # environment variables
+import sys       # system functions
+from typing import TypedDict  # dict typing (for graph state)
 
-import requests
-from bs4 import BeautifulSoup
-from dotenv import load_dotenv
+# Third-party libraries:
+import requests                      # HTTP requests (download a web page)
+from bs4 import BeautifulSoup        # HTML parsing (extract text)
+from dotenv import load_dotenv       # load API keys from .env
 
-from langchain_chroma import Chroma
-from langchain_core.documents import Document
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langgraph.graph import START, END, StateGraph</code></pre>
+# LangChain / LangGraph:
+from langchain_chroma import Chroma              # vector DB for retrieval
+from langchain_core.documents import Document    # standard document format
+from langchain_core.prompts import ChatPromptTemplate  # prompt template
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings  # LLM and embeddings
+from langchain_text_splitters import RecursiveCharacterTextSplitter  # text chunking
+from langgraph.graph import START, END, StateGraph  # building the agent graph</code></pre>
         </div>
+      </section>
+      <section id="b1">
+        <h2>Block 2. Rag pipeline logic</h2>
+
+        <!-- <h2>Block 1. Imports</h2> -->
         <div class="say">
-          <b class="t">Line by line</b>
+          <b class="t">Narration</b>
+          <p>
+            Before we write code, let’s get the logic. RAG means
+            Retrieval-Augmented Generation. It works in two phases.
+            <code>Indexing</code> and <code>Answering questions</code>. For
+            <code>Indexing</code>: take a document, split it into chunks, turn
+            them into vectors, and put them in a store. To <code>Answer</code>a
+            question, find the most similar chunks and give them to the model as
+            context.
+          </p>
+
+          <p>
+            Every RAG system starts with data. We’ll download a page, throw away
+            the noise — scripts, styles, nav, footer — and keep clean text. The
+            rule I follow get rid of garbage to avoid hallucinations. The
+            cleaner the data, the more accurate the search.
+          </p>
+        </div>
+      </section>
+
+      <section id="b1">
+        <h2>Block 3. Indexing and getting data from URL</h2>
+
+        <!-- <h2>Block 1. Imports</h2> -->
+        <div class="say">
+          <b class="t">Narration</b>
+          <p>
+            Lets start with the indexing phase. We need to get data from the URL
+            and split it into chunks. Create load_data function that will do
+            this for us.
+          </p>
           <ul>
             <li>
-              <code>import hashlib</code> — import the hash-functions module.
-              We’ll later use it to make unique IDs for each text chunk.
+              First of all we need to get data from the URL, that we passed as
+              an argument using requests library.
             </li>
             <li>
-              <code>import os</code> — module for talking to the operating
-              system. We need one feature: reading environment variables.
+              Then we need to parse the HTML content using BeautifulSoup
+              library.
             </li>
             <li>
-              <code>import sys</code> — access to command-line arguments and
-              exiting the program. With it we’ll know what you typed:
-              <code>index</code> or nothing.
+              Now we need to remove the noise from the content using the
+              following tags: script, style, nav, footer. Because these tags are
+              not needed for the content and they will only add garbage to the
+              content.
             </li>
             <li>
-              <code>from typing import TypedDict</code> — lets us describe a
-              dictionary’s structure: which keys it has and what types the
-              values are. Useful for graph state.
+              Also lets add validation to the function, when the content is not
+              found, we will raise an error.
             </li>
             <li>
-              <code>import requests</code> — HTTP request library; we’ll use it
-              to download the page.
-            </li>
-            <li>
-              <code>from bs4 import BeautifulSoup</code> — HTML parser: turns a
-              “mess” of tags into a tree you can walk and pull text from.
-            </li>
-            <li>
-              <code>from dotenv import load_dotenv</code> — function that loads
-              our <code>.env</code> file into the environment.
-            </li>
-            <li>
-              <code>from langchain_chroma import Chroma</code> — the vector
-              database where we’ll store chunks.
-            </li>
-            <li>
-              <code>from langchain_core.documents import Document</code> —
-              LangChain’s standard “container”: text plus metadata, for example
-              the source.
-            </li>
-            <li>
-              <code>ChatPromptTemplate</code> — a prompt template with
-              “placeholders” where context and the question go.
-            </li>
-            <li>
-              <code>ChatOpenAI, OpenAIEmbeddings</code> — clients for the chat
-              model and the embedding model via an OpenAI-compatible API.
-            </li>
-            <li>
-              <code>RecursiveCharacterTextSplitter</code> — our “knife” for
-              cutting long text.
-            </li>
-            <li>
-              <code>START, END, StateGraph</code> — LangGraph building blocks:
-              entry point, exit point, and the graph itself.
-            </li>
-            <li>
-              <b>For mid-level:</b> notice we import only what we need, not
-              <code>import *</code> — that makes the code easier to read and
-              check.
+              And the final step, when magic happens, we need to return the
+              chunks as a list of Document objects. for this purpose we will use
+              Document class from LangChain library.
             </li>
           </ul>
+        </div>
+        <div class="cb">
+          <span class="lang">python</span>
+          <pre><code>def load_data(url: str) -> list[Document]:
+    response = requests.get(
+        url,
+        timeout=20,
+        headers={"User-Agent": "RAG-Tutorial/1.0"},
+    )
+    response.raise_for_status()
+
+    soup = BeautifulSoup(response.text, "html.parser")
+
+    for tag in soup(["script", "style", "nav", "footer"]):
+        tag.decompose()
+
+    text = soup.get_text(separator=" ", strip=True)
+
+    if not text:
+        raise ValueError("No text content found at the URL")
+
+    return [Document(page_content=text, metadata={"source": url})]</code></pre>
         </div>
       </section>
 
       <section id="b2">
-        <h2>Block 2. Configuration</h2>
+        <h2>Block 4. Configuration</h2>
         <div class="say">
           <b class="t">Narration</b>
           <p>
-            First rule of good code: settings don’t live inside the logic. We’ll
-            move them into environment variables — then the same code works with
-            a local model, the cloud, and a teammate’s server, with no manual
-            edits.
+            lets call load_dotenv() function to load all values from .env file
+            into the environment variables.Call it after all imports , otherwise
+            the settings will not be loaded. First rule of good code: settings
+            don’t live inside the logic. We’ll move them into environment
+            variables — then the same code works with a local model, the cloud,
+            and a teammate’s server, with no manual edits.
           </p>
         </div>
         <div class="cb">
@@ -445,9 +495,7 @@ DB_PATH = "./chroma_db"</code></pre>
           <b class="t">Line by line</b>
           <ul>
             <li>
-              <code>load_dotenv()</code> — read the <code>.env</code> file and
-              put its values into the environment. Call it <i>before</i> the
-              first <code>os.getenv</code>, or the settings won’t load.
+              <code></code>
             </li>
             <li>
               <code
@@ -470,107 +518,297 @@ DB_PATH = "./chroma_db"</code></pre>
       </section>
 
       <section id="b3">
-        <h2>Block 3. Models: embeddings and LLM</h2>
+        <h2>Block 5. Models: embeddings and LLM</h2>
         <div class="say">
           <b class="t">Narration</b>
           <p>
             Here’s the fun part. An embedding turns text into a set of numbers
-            so that texts close in meaning sit close together in “meaning
-            space.” “Dog” and “puppy” will be neighbors; “dog” and “tax” will be
-            far apart. That closeness is what lets us search by meaning, not by
-            exact word match. The second model, the LLM, writes the final
-            answer. The trick: Ollama can pretend to be the OpenAI API, so we
-            use OpenAI clients and simply change the base URL.
+            so that chunks of text, that are close in meaning, sit close
+            together in “meaning space.” That closeness is what lets us search
+            by meaning, not by exact word match.
           </p>
         </div>
         <div class="cb">
           <span class="lang">python</span>
-          <pre><code>embeddings = OpenAIEmbeddings(
+          <pre><code># Create an embeddings model: turns text into vectors for semantic search
+embeddings = OpenAIEmbeddings(
+    # Which embedding model to use (env var, fallback to nomic-embed-text)
     model=os.getenv("EMBEDDING_MODEL", "nomic-embed-text"),
+    # Server address: default 127.0.0.1:11434 = local Ollama (OpenAI-compatible API)
     base_url=os.getenv("LLM_API_BASE", "http://127.0.0.1:11434/v1"),
+    # Ollama ignores the key, but the OpenAI client requires one -> dummy value
     api_key=os.getenv("LLM_API_KEY", "ollama"),
-)
-
+)</code></pre>
+          <div class="say">
+            <b class="t">Narration</b>
+            <p>
+              The second model, the LLM, writes the final answer. Here is The
+              trick: Ollama can pretend to be the OpenAI API, so we use OpenAI
+              clients and simply change the base URL. So you can use your
+              chatGpt model # for example:model=os.getenv("OPENAI_MODEL",
+              "gpt-4.1-mini"). pay attention to the temperature parameter, it is
+              set to 0, because we want to get factual answers, no creativity
+              from the model. If you want to get more creative answers from your
+              model, you can set it to 0.5 or 1.
+            </p>
+          </div>
+          <pre><code># Create the chat model (the "brain" that generates answers)
 llm = ChatOpenAI(
-    model=os.getenv("CHAT_MODEL", "llama3.1"),
-    base_url=os.getenv("LLM_API_BASE", "http://127.0.0.1:11434/v1"),
-    api_key=os.getenv("LLM_API_KEY", "ollama"),
+    model=os.getenv("CHAT_MODEL", "llama3.1"),                  # chat model
+    base_url=os.getenv("LLM_API_BASE", "http://127.0.0.1:11434/v1"),  # local Ollama
+    api_key=os.getenv("LLM_API_KEY", "ollama"),                 # dummy key (required by client)
+    # 0 = deterministic, factual answers (good for RAG, no creativity)
     temperature=0,
-)
+)</code></pre>
+        </div>
+      </section>
 
+      <section id="b4">
+        <h2>Block 6. Split data into chunks</h2>
+        <div class="say">
+          <b class="t">Narration</b>
+          <p style="color: red; font-weight: bold">
+            Why not just give the model the whole page? First, models have a
+            limited context window. Second, search over a huge text gets fuzzy.
+            So we split a large document into chunks — small meaning-sized
+            pieces.
+          </p>
+          <p>
+            when we got our data from the URL, we need to split it into chunks.
+          </p>
 
-# embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+          <div class="cb">
+            <span class="lang">python</span>
+            <pre><code># 2. Split data into chunks
+def split_documents(documents: list[Document]) -> list[Document]:
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=800,
+        chunk_overlap=150,
+    )
+    return splitter.split_documents(documents)</code></pre>
+          </div>
 
-# llm = ChatOpenAI(
-#     model=os.getenv("OPENAI_MODEL", "gpt-4.1-mini"),
-#     temperature=0,
-# )</code></pre>
+          <p>
+            In the code, we use RecursiveCharacterTextSplitter class from
+            LangChain library. It will split the text into chunks of 800
+            characters with 150 characters overlap. Why did we choose numbers of
+            characters? Because it is a good balance between the context window
+            of the model and the accuracy of the search. The overlap is
+            important to avoid losing context when the chunks are joined
+            together. You can experiment with different values to find the best
+            one for your model.
+          </p>
+        </div>
+      </section>
+
+      <section id="b4">
+        <h2>Block 7. Vector store and prompt</h2>
+        <div class="say">
+          <b class="t">Narration</b>
+          <p>
+            when we finished with the splitting, we need to store the chunks in
+            a vector store. We will use Chroma class from LangChain library. It
+            will store the chunks in a vector store. lets create vector store.
+          </p>
+
+          <div class="cb">
+            <span class="lang">python</span>
+            <pre><code>vector_store = Chroma(
+    collection_name="rag_documents",  # collection name, like a table name in a regular database.
+    embedding_function=embeddings,  # tell the store which model to use for vectors
+    persist_directory=DB_PATH,  # persist_directory points to the location on the disk.
+)</code></pre>
+          </div>
+
+          <p>
+            A vector store holds text chunks together with their vectors and can
+            instantly find the nearest ones. embedding_function tell the store
+            which model to use for vectors, both when adding and when searching.
+            It must be the same model, or the "maps of meaning" won't line up.
+            And persist_directory points to the location on the disk where the
+            data will be stored. if the directory does not exist, it will be
+            created.
+          </p>
+        </div>
+      </section>
+
+      <section id="b7">
+        <h2>Block 8. Steps 3–4 — embeddings and save to Chroma</h2>
+        <div class="say">
+          <b class="t">Narration</b>
+          <p>
+            when we created the vector store, we need to add the chunks to it.
+            Now we’ll put indexing together using the functions that we created
+            together to load, split, embed and store. Let's create the
+            index_documents function. We'll load the data using source_url, then
+            use the load_data function to get the document and split it into
+            chunks with split_documents function.
+          </p>
+
+          <div class="cb">
+            <span class="lang">python</span>
+            <pre><code># 3–4. Generate embeddings and store chunks in ChromaDB
+def index_documents() -> None:
+    documents = load_data(SOURCE_URL)
+    chunks = split_documents(documents)
+
+    # identifiers for each chunk, to avoid duplicates in case of a second run.
+    ids = [
+        hashlib.sha256(
+            f"{chunk.metadata['source']}:{i}:{chunk.page_content}".encode()
+        ).hexdigest()
+        for i, chunk in enumerate(chunks)
+    ]
+
+    vector_store.add_documents(documents=chunks, ids=ids)  # add the chunks to the vector store.
+
+    print(f"Indexed {len(chunks)} chunks from {SOURCE_URL}")</code></pre>
+          </div>
+
+          <p>
+            Then we'll build the list of identifiers for each chunk using unique
+            ID based on a hash, to avoid duplicates in case of a second run. And
+            finally we will use add_documents method from Chroma class to add
+            the chunks to the vector store. And print information about the
+            number of chunks that were added.
+          </p>
+        </div>
+      </section>
+
+      <section id="b8">
+        <h2>Block 9. Graph state</h2>
+        <div class="say">
+          <b class="t">Narration</b>
+          <p>
+            Now one of the most interesting parts. LangGraph describes a process
+            as a graph: nodes are steps, edges are transitions between them. To
+            save the state between the nodes, we will use a dictionary,that
+            every node reads and updates. You can consider it like a memory. We
+            will use TypedDict class from typing module to define the schema of
+            the state.
+          </p>
+
+          <div class="cb">
+            <span class="lang">python</span>
+            <pre><code># 5–9. RAG workflow
+class RAGState(TypedDict):
+    question: str # the user's question
+    context: str # the joined text of retrieved chunks
+    sources: list[str] # the list of sources
+    answer: str # the final answer</code></pre>
+          </div>
+          <p>
+            The state schema is the definition of the keys that will be used in
+            the state dictionary. We will use the following keys:
+          </p>
+          <ul>
+            <li>the user's question</li>
+            <li>the joined text of retrieved chunks</li>
+            <li>the list of sources</li>
+            <li>and the final answer</li>
+          </ul>
+        </div>
+      </section>
+      <section id="b8">
+        <h2>Block 10. Nodes and the retrieval step</h2>
+        <div class="say">
+          <b class="t">Narration</b>
+          <p>
+            Now lets create our nodes.The first node is
+            <code>retrieve</code>: it finds chunks closest to the question by
+            meaning.
+          </p>
+        </div>
+
+        <div class="cb">
+          <span class="lang">python</span>
+          <pre><code># 6–7. Retrieve relevant chunks using vector similarity search
+def retrieve(state: RAGState) -> dict:
+    # Graph node: find the most relevant chunks for the user's question
+    documents = vector_store.similarity_search(
+        state["question"],   # the user's question from graph state
+        k=3,                 # return top-3 most similar chunks
+    )</code></pre>
+        </div>
+
+        <div class="say">
+          <b class="t">Narration</b>
+          <p>
+            <code>retrieve function</code> will create the retrieval node. It
+            gets the current state and returns a dictionary with only the
+            updates, not the whole state.
+          </p>
+          <p>
+            Remember that every node should get the state as an argument to
+            update it with the new values after the work is done.
+          </p>
         </div>
         <div class="say">
           <b class="t">Line by line</b>
           <ul>
             <li>
-              <code>embeddings = OpenAIEmbeddings(...)</code> — create an object
-              that can turn any text into a vector.
+              <code>similarity_search</code> is used to find the most relevant
+              chunks for the user's question The question from user's input
+              becomes a vector, and Chroma finds the three nearest chunks by
+              meaning. the <code>k</code> value is used to specify how many
+              chunks to return. More chunks means wider context, but also more
+              noise for llm model.
+            </li>
+            <li>
+              <pre><code># 6–7. Retrieve relevant chunks using vector similarity search
+
+# Join the retrieved chunks into one context string for the LLM
+context = "\n\n".join(
+    document.page_content for document in documents
+)</code></pre>
+            </li>
+            <li>
+              When chunks are retrieved, we need to join them into one context
+              string for the LLM.
+            </li>
+
+            <li>
+              <pre><code># Collect unique source URLs (set -> deduplication -> list) to avoid duplicates
+sources = list({
+    document.metadata["source"]
+    for document in documents
+})
+
+# Return only the updated state keys (LangGraph merges them)
+return {
+    "context": context,
+    "sources": sources,
+}</code></pre>
             </li>
             <li>
               <code
-                >model=os.getenv("EMBEDDING_MODEL", "nomic-embed-text")</code
+                >sources = removes duplicates, since several chunks can come
+                from the same page.</code
               >
-              — which model builds the vectors; by default it’s the
-              <code>nomic-embed-text</code> we downloaded.
             </li>
             <li>
-              <code>base_url=os.getenv("LLM_API_BASE", ...)</code> — the API
-              address. Here it’s local Ollama on port 11434; the
-              <code>/v1</code> path enables OpenAI-compatible mode.
-            </li>
-            <li>
-              <code>api_key=os.getenv("LLM_API_KEY", "ollama")</code> — Ollama
-              doesn’t check the key, but the client requires a non-empty string,
-              so we write “ollama”.
-            </li>
-            <li>
-              <code>llm = ChatOpenAI(...)</code> — now the chat-model client.
-              Same parameters: model <code>llama3.1</code>, URL, and key.
-            </li>
-            <li>
-              <code>temperature=0</code> — “temperature” controls randomness.
-              Zero means the model picks the most likely option. For RAG that’s
-              what we want: factual answers, no creativity, and repeatable
-              across runs.
-            </li>
-            <li>
-              The commented lines are a fallback with cloud OpenAI. The
-              <code>#</code> mark is a comment — Python ignores it. Want to
-              switch? Uncomment them and comment out the block above. Blank
-              lines and comments aren’t fluff — they’re documentation for future
-              you.
+              and finally LangGraph merges these updated keys into the shared
+              state.
             </li>
           </ul>
         </div>
       </section>
 
-      <section id="b4">
-        <h2>Block 4. Vector store and prompt</h2>
+      <section id="b9">
+        <h2>Block 11. Answer generation and graph assembly</h2>
         <div class="say">
           <b class="t">Narration</b>
           <p>
-            A vector store holds text chunks together with their vectors and can
-            instantly find the nearest ones. A prompt is the instruction for the
-            model. The main RAG guardrail: “answer only from the context.”
-            That’s what separates a useful assistant from a fabricator.
+            The second node is <code>generate</code>. It takes the retrieved
+            context and the question, fills the template, and sends it to the
+            model. Then we connect the nodes into a chain: start → retrieve →
+            generate → end — and compile the graph into a runnable object.
           </p>
+          <p>to generate an answer, we need to use the prompt template.</p>
         </div>
         <div class="cb">
           <span class="lang">python</span>
-          <pre><code>vector_store = Chroma(
-    collection_name="rag_documents",
-    embedding_function=embeddings,
-    persist_directory=DB_PATH,
-)
-
-prompt = ChatPromptTemplate.from_messages([
+          <pre><code>prompt = ChatPromptTemplate.from_messages([
     (
         "system",
         """Answer the question using only the provided context.
@@ -583,495 +821,180 @@ Context:
     ("human", "{question}"),
 ])</code></pre>
         </div>
-        <div class="say">
-          <b class="t">Line by line</b>
-          <ul>
-            <li>
-              <code>vector_store = Chroma(...)</code> — connect to the store; if
-              it doesn’t exist, it will be created.
-            </li>
-            <li>
-              <code>collection_name="rag_documents"</code> — collection name,
-              like a table name in a regular database.
-            </li>
-            <li>
-              <code>embedding_function=embeddings</code> — tell the store which
-              model to use for vectors, both when adding and when searching. It
-              must be the same model, or the “maps of meaning” won’t line up.
-            </li>
-            <li>
-              <code>persist_directory=DB_PATH</code> — persist data to disk so it
-              survives a restart.
-            </li>
-            <li>
-              <code>ChatPromptTemplate.from_messages([...])</code> — build a
-              template from a list of role-tagged messages.
-            </li>
-            <li>
-              The <code>"system"</code> role is the rules of the game. First
-              line: answer only from the context. Second: if the answer isn’t in
-              the context — honestly say “I don’t know.” Third — protection from
-              prompt injection: what if the loaded page hides “forget all
-              instructions”; we forbid the model from obeying that.
-            </li>
-            <li>
-              <code>{context}</code> — the placeholder where the retrieved
-              chunks will go.
-            </li>
-            <li>
-              <code>("human", "{question}")</code> — the user message;
-              <code>{question}</code> will be filled with their question.
-            </li>
-            <li>
-              <b>For mid-level:</b> the English prompt language isn’t
-              accidental — most models follow instructions better in English,
-              even when they answer in another language.
-            </li>
-          </ul>
-        </div>
-      </section>
 
-      <section id="b5">
-        <h2>Block 5. Step 1 — load data from a URL</h2>
         <div class="say">
           <b class="t">Narration</b>
           <p>
-            Every RAG system starts with data. We’ll download a page, throw away
-            the noise — scripts, styles, nav, footer — and keep clean text. The
-            rule I repeat in every course: garbage in, garbage out. The cleaner
-            the data, the more accurate the search.
+            In the prompt template we have system,context and question. System
+            is the system prompt that tells the model what to do. Context is the
+            joined text of retrieved 3 most relevant chunks, that we got from
+            retrive function in the updated state. And Question is the user's
+            question.
+          </p>
+          <p>Lets create the generate_answer function.</p>
+        </div>
+        <div class="cb">
+          <span class="lang">python</span>
+          <pre><code>def generate(state: RAGState) -> dict:</code></pre>
+        </div>
+
+        <div class="say">
+          <b class="t">Narration</b>
+          <p>
+            The next step is to invoke the prompt template with the context and
+            question from the state.
           </p>
         </div>
         <div class="cb">
           <span class="lang">python</span>
-          <pre><code># 1. Get data from URL
-# Docs: https://beautiful-soup-4.readthedocs.io/en/latest/#navigating-the-tree
-def load_data(url: str) -> list[Document]:
-    response = requests.get(
-        url,
-        timeout=20,
-        headers={"User-Agent": "RAG-Tutorial/1.0"},
-    )
-    response.raise_for_status()
+          <pre><code>messages = prompt.invoke({
+    "context": state["context"],  # the joined text of retrieved chunks (k=3)
+    "question": state["question"],
+})</code></pre>
+        </div>
 
-    soup = BeautifulSoup(response.text, "html.parser")
-
-    for tag in soup(["script", "style", "nav", "footer"]):
-        tag.decompose()
-
-    text = soup.get_text(separator=" ", strip=True)
-
-    if not text:
-        raise ValueError("No text content found at the URL")
-
-    return [Document(page_content=text, metadata={"source": url})]</code></pre>
+        <div class="say">
+          <b class="t">Narration</b>
+          <p>Then we ask the model to generate an answer.</p>
+        </div>
+        <div class="cb">
+          <span class="lang">python</span>
+          <pre><code>response = llm.invoke(messages) # ask the model to generate an answer</code></pre>
         </div>
         <div class="say">
-          <b class="t">Line by line</b>
-          <ul>
-            <li>
-              The comment above the function is the step number and a link to
-              the BeautifulSoup docs; leaving “breadcrumbs” like that is a good
-              habit.
-            </li>
-            <li>
-              <code>def load_data(url: str) -&gt; list[Document]</code> —
-              define a function that takes a URL string and returns a list of
-              documents. Type annotations don’t change runtime behavior, but
-              they tell the editor and teammates what to expect on input and
-              output.
-            </li>
-            <li>
-              <code>requests.get(...)</code> — send a GET request.
-              <code>timeout=20</code> — wait at most 20 seconds so the program
-              doesn’t hang forever. <code>headers</code> with User-Agent —
-              politely introduce ourselves to the site.
-            </li>
-            <li>
-              <code>response.raise_for_status()</code> — if the server returned
-              an error (404, 500), raise an exception right away instead of
-              silently processing an error page.
-            </li>
-            <li>
-              <code>soup = BeautifulSoup(response.text, "html.parser")</code> —
-              turn HTML into a tree we can walk.
-            </li>
-            <li>
-              <code>for tag in soup([...])</code> — find all script, style, nav,
-              and footer tags; <code>tag.decompose()</code> removes them with
-              their content. Code and menus are noise and don’t belong in the
-              vector store.
-            </li>
-            <li>
-              <code>text = soup.get_text(separator=" ", strip=True)</code> —
-              extract all visible text, join with spaces, and strip extra
-              whitespace.
-            </li>
-            <li>
-              <code>if not text: raise ValueError(...)</code> — if there’s no
-              text, stop with a clear error: better to fail early than index
-              emptiness.
-            </li>
-            <li>
-              <code
-                >return [Document(page_content=text, metadata={"source":
-                url})]</code
-              >
-              — wrap the text in a Document: <code>page_content</code> holds the
-              text, <code>metadata</code> holds where it came from. Later we’ll
-              show the user the answer’s source.
-            </li>
-            <li>
-              <b>For mid-level:</b> JavaScript-framework pages won’t work this
-              way — there’s no text in the raw HTML, and you’d need a headless
-              browser.
-            </li>
-          </ul>
+          <b class="t">Narration</b>
+          <p>And finally we return the answer from the model.</p>
+        </div>
+        <div class="cb">
+          <span class="lang">python</span>
+          <pre><code>return {"answer": str(response.content)}</code></pre>
         </div>
       </section>
 
-      <section id="b6">
-        <h2>Block 6. Step 2 — split into chunks</h2>
+      <section id="b1">
+        <h2>Block 12. Graph assembly</h2>
+        <div class="cb">
+          <span class="lang">bash</span>
+          <pre><code></code></pre>
+        </div>
+        <!-- <h2>Block 1. Imports</h2> -->
         <div class="say">
           <b class="t">Narration</b>
           <p>
-            Why not just give the model the whole page? First, models have a
-            limited context window. Second, search over a huge text gets fuzzy:
-            a vector of the whole page is like “the average temperature in the
-            hospital.” So we split into chunks — small meaning-sized pieces. To
-            keep ideas from cutting off exactly at the boundary, neighboring
-            chunks slightly overlap.
+            Now we should define and compile the LangGraph workflow First of all
+            we need to create a builder object.
           </p>
         </div>
         <div class="cb">
           <span class="lang">python</span>
-          <pre><code># 2. Split data into chunks
-def split_documents(documents: list[Document]) -> list[Document]:
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=800,
-        chunk_overlap=150,
-    )
-    return splitter.split_documents(documents)</code></pre>
+          <pre><code>builder = StateGraph(RAGState)</code></pre>
         </div>
-        <div class="say">
-          <b class="t">Line by line</b>
-          <ul>
-            <li>
-              <code
-                >def split_documents(documents: list[Document]) -&gt;
-                list[Document]</code
-              >
-              — define a function that takes a list of full documents and
-              returns a list of small pieces.
-            </li>
-            <li>
-              <code>splitter = RecursiveCharacterTextSplitter(...)</code> —
-              create the “knife.” It splits smartly: first by paragraphs, then
-              sentences, then words, until a piece fits the limit.
-            </li>
-            <li>
-              <code>chunk_size=800</code> — max chunk length in characters. Too
-              large — search gets fuzzy; too small — you lose context. 800 is a
-              solid starting point.
-            </li>
-            <li>
-              <code>chunk_overlap=150</code> — how many characters neighboring
-              chunks share. That’s insurance: if an important idea sits on the
-              boundary, it won’t get lost.
-            </li>
-            <li>
-              <code>return splitter.split_documents(documents)</code> — run the
-              split and return the result. Metadata, including the source, is
-              copied into every chunk automatically.
-            </li>
-          </ul>
-        </div>
-      </section>
 
-      <section id="b7">
-        <h2>Block 7. Steps 3–4 — embeddings and save to Chroma</h2>
         <div class="say">
           <b class="t">Narration</b>
           <p>
-            Now we’ll put indexing together: load, split, embed, store. We’ll
-            give each chunk a unique ID based on a hash — so a second run doesn’t
-            create duplicates.
+            The next step We need to add the nodes retrive and generate to the
+            builder.
           </p>
         </div>
         <div class="cb">
           <span class="lang">python</span>
-          <pre><code># 3–4. Generate embeddings and store chunks in ChromaDB
-def index_documents() -> None:
-    documents = load_data(SOURCE_URL)
-    chunks = split_documents(documents)
-
-    ids = [
-        hashlib.sha256(
-            f"{chunk.metadata['source']}:{i}:{chunk.page_content}".encode()
-        ).hexdigest()
-        for i, chunk in enumerate(chunks)
-    ]
-
-    vector_store.add_documents(documents=chunks, ids=ids)
-
-    print(f"Indexed {len(chunks)} chunks from {SOURCE_URL}")</code></pre>
+          <pre><code>builder.add_node("retrieve", retrieve)
+builder.add_node("generate", generate_answer)</code></pre>
         </div>
-        <div class="say">
-          <b class="t">Line by line</b>
-          <ul>
-            <li>
-              <code>def index_documents() -&gt; None</code> — define a function
-              that returns nothing but indexes a document from an external
-              source into your database. We’ll run it once.
-            </li>
-            <li>
-              <code>documents = load_data(SOURCE_URL)</code> — step 1: download
-              the page from the URL in settings. Reminder: for our project it’s
-              better to use the URL from my site so we stay in sync.
-            </li>
-            <li>
-              <code>chunks = split_documents(documents)</code> — step 2: split
-              the text into chunks.
-            </li>
-            <li>
-              <code>ids = [...]</code> — build the list of identifiers.
-              <code>enumerate(chunks)</code> gives the index <code>i</code> and
-              the chunk itself. For each one we build the string “source :
-              number : text”.
-            </li>
-            <li>
-              <code>.encode()</code> turns the string into bytes,
-              <code>hashlib.sha256(...)</code> hashes them, and
-              <code>.hexdigest()</code> shows the hash as a readable string. The
-              same chunk always gets the same ID, so re-indexing doesn’t
-              multiply records.
-            </li>
-            <li>
-              <code>vector_store.add_documents(documents=chunks, ids=ids)</code>
-              — here’s the magic. For each chunk the embedding model is called,
-              a vector is produced, and Chroma stores it with the text and ID.
-            </li>
-            <li>
-              <code
-                >print(f"Indexed {len(chunks)} chunks from {SOURCE_URL}")</code
-              >
-              — an f-string inserts the chunk count and URL. Simple feedback: we
-              see that it worked.
-            </li>
-            <li>
-              <b>For mid-level:</b> if the page changes, old chunks stay in the
-              store. In production you add deleting stale records by source.
-            </li>
-          </ul>
-        </div>
-      </section>
 
-      <section id="b8">
-        <h2>Block 8. Graph state and the retrieval step</h2>
         <div class="say">
           <b class="t">Narration</b>
           <p>
-            LangGraph describes a process as a graph: nodes are steps, edges are
-            transitions between them. The graph has shared state — a dictionary
-            that every node reads and updates. Think of a relay race with one
-            shared folder of documents. The first node is
-            <code>retrieve</code>: it finds chunks closest to the question by
-            meaning.
+            to combine the nodes we need to add edges showing the flow of the
+            graph, using START, END key words .
           </p>
         </div>
         <div class="cb">
           <span class="lang">python</span>
-          <pre><code># 5–9. RAG workflow
-class RAGState(TypedDict):
-    question: str
-    context: str
-    sources: list[str]
-    answer: str
-
-
-# 6–7. Retrieve relevant chunks using vector similarity search
-def retrieve(state: RAGState) -> dict:
-    documents = vector_store.similarity_search(
-        state["question"],
-        k=3,
-    )
-
-    context = "\n\n".join(
-        document.page_content for document in documents
-    )
-
-    sources = list({
-        document.metadata["source"]
-        for document in documents
-    })
-
-    return {
-        "context": context,
-        "sources": sources,
-    }</code></pre>
-        </div>
-        <div class="say">
-          <b class="t">Line by line</b>
-          <ul>
-            <li>
-              <code>class RAGState(TypedDict)</code> — describe the state
-              schema: which keys live in the graph’s shared “folder.”
-            </li>
-            <li>
-              <code>question: str</code> — the user’s question;
-              <code>context: str</code> — joined text of retrieved chunks;
-              <code>sources: list[str]</code> — list of sources;
-              <code>answer: str</code> — the final answer.
-            </li>
-            <li>
-              <code>def retrieve(state: RAGState) -&gt; dict</code> — create the
-              retrieval node. It gets the current state and returns a dictionary
-              with only the updates, not the whole state.
-            </li>
-            <li>
-              <code
-                >vector_store.similarity_search(state["question"], k=3)</code
-              >
-              — the question becomes a vector, and Chroma finds the three
-              nearest chunks by meaning. Parameter <code>k</code> is how many to
-              return. More means wider context, but also more noise.
-            </li>
-            <li>
-              <code
-                >"\n\n".join(document.page_content for document in
-                documents)</code
-              >
-              — take the text of each found document and join with a blank line
-              to make one context string.
-            </li>
-            <li>
-              <code>sources = list({...})</code> — curly braces with a loop make
-              a set; that removes duplicates, since several chunks can come from
-              the same page. <code>list</code> turns it back into a list.
-            </li>
-            <li>
-              <code>return {"context": context, "sources": sources}</code> —
-              return the results. LangGraph merges these keys into the shared
-              state.
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <section id="b9">
-        <h2>Block 9. Answer generation and graph assembly</h2>
-        <div class="say">
-          <b class="t">Narration</b>
-          <p>
-            The second node is <code>generate</code>. It takes the retrieved
-            context and the question, fills the template, and sends it to the
-            model. Then we wire the nodes into a chain: start → retrieve →
-            generate → end — and compile the graph into a runnable object.
-          </p>
-        </div>
-        <div class="cb">
-          <span class="lang">python</span>
-          <pre><code># 8–9. Build prompt and invoke the LLM
-def generate_answer(state: RAGState) -> dict:
-    messages = prompt.invoke({
-        "context": state["context"],
-        "question": state["question"],
-    })
-
-    response = llm.invoke(messages)
-
-    return {"answer": str(response.content)}
-
-
-# Define and compile the LangGraph workflow
-builder = StateGraph(RAGState)
-
-builder.add_node("retrieve", retrieve)
-builder.add_node("generate", generate_answer)
-
-builder.add_edge(START, "retrieve")
+          <pre><code>builder.add_edge(START, "retrieve")
 builder.add_edge("retrieve", "generate")
-builder.add_edge("generate", END)
-
-rag_graph = builder.compile()</code></pre>
+builder.add_edge("generate", END)</code></pre>
         </div>
+
         <div class="say">
-          <b class="t">Line by line</b>
-          <ul>
-            <li>
-              <code>def generate_answer(state: RAGState) -&gt; dict</code> —
-              create the generation node.
-            </li>
-            <li>
-              <code>prompt.invoke({...})</code> — fill the template placeholders
-              with context and question and get ready-made messages.
-            </li>
-            <li>
-              <code>response = llm.invoke(messages)</code> — send the messages to
-              the model and wait for the reply.
-            </li>
-            <li>
-              <code>return {"answer": str(response.content)}</code> — cast the
-              answer text to a string and put it in state.
-            </li>
-            <li>
-              <code>builder = StateGraph(RAGState)</code> — create the graph
-              builder and give it the state schema.
-            </li>
-            <li>
-              <code>add_node("retrieve", retrieve)</code> and
-              <code>add_node("generate", generate_answer)</code> — register the
-              nodes: each has a name and a function.
-            </li>
-            <li>
-              <code>add_edge(START, "retrieve")</code> — entry goes to retrieve.
-              <code>add_edge("retrieve", "generate")</code> — after retrieve
-              comes generate. <code>add_edge("generate", END)</code> — after
-              generate we finish.
-            </li>
-            <li>
-              <code>rag_graph = builder.compile()</code> — verify the graph is
-              wired correctly and get an executable object.
-            </li>
-            <li>
-              <b>For mid-level:</b> for now the graph is linear and may look
-              redundant. Its power shows up when you add conditional edges:
-              rewrite the question, search again, validate the answer.
-            </li>
-          </ul>
+          <b class="t">Narration</b>
+          <p>and finally we compile the graph into a runnable object.</p>
+        </div>
+        <div class="cb">
+          <span class="lang">python</span>
+          <pre><code>rag_graph = builder.compile()</code></pre>
         </div>
       </section>
+
+      <!--        
+       <section id="b1">
+        <p><b>5. Run commands (you’ll need these at the end)</b></p>
+        <div class="cb">
+          <span class="lang">bash</span>
+          <pre><code>uv run main.py index   # indexing
+uv run main.py         # Q&amp;A
+# later, for FastAPI: uv run fastapi dev main.py</code></pre>
+        </div>
+
+        <div class="say">
+          <b class="t">Narration</b>
+          <p>
+           
+          </p>
+        </div>
+       </section> -->
 
       <section id="b10">
-        <h2>Block 10. Running and the entry point</h2>
+        <h2>Block 13. Running and the entry point</h2>
         <div class="say">
           <b class="t">Narration</b>
           <p>
             What’s left is a convenient interface. One function asks the graph a
-            question and prints the answer with sources. The file’s main block
-            decides what to do: either index the data or enter dialogue mode.
+            question and prints the answer with sources. to do it let's create
+            entry point with two actions, where the application will either
+            index document or answer user's question. main block
           </p>
         </div>
         <div class="cb">
           <span class="lang">python</span>
-          <pre><code># Run the RAG pipeline
-def ask_question(question: str) -> None:
-    result = rag_graph.invoke({
-        "question": question,
-        "context": "",
-        "sources": [],
-        "answer": "",
-    })
+          <pre>
+            
+            <code>if __name__ == "__main__":
 
-    print("\nAnswer:")
-    print(result["answer"])
+    index_documents()
 
-    print("\nSources:")
-    for source in result["sources"]:
-        print(f"- {source}")
+    ask_question(question)</code>
+          </pre>
+        </div>
 
+        <div class="say">
+          <b class="t">Narration</b>
+          <p>
+            Here we should add conditoion for the index_documents action. If the
+            application is run with the index argument, the application will
+            index the document.
+          </p>
+        </div>
+        <div class="cb">
+          <span class="lang">python</span>
+          <pre><code>if len(sys.argv) > 1 and sys.argv[1] == "index":
+    index_documents()</code></pre>
+        </div>
 
-if __name__ == "__main__":
+        <div class="say">
+          <b class="t">Narration</b>
+          <p>
+            If the application is run without the index argument, the
+            application will check if there are indexed documents in our vectore
+            store and enter dialogue mode.
+          </p>
+        </div>
+
+        <div class="cb">
+          <span class="lang">python</span>
+          <pre>
+<code>if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "index":
         index_documents()
     else:
@@ -1086,78 +1009,132 @@ if __name__ == "__main__":
                 break
 
             if question:
-                ask_question(question)</code></pre>
+                ask_question(question)</code>
+</pre>
         </div>
+
         <div class="say">
-          <b class="t">Line by line</b>
-          <ul>
-            <li>
-              <code>def ask_question(question: str) -&gt; None</code> — create a
-              wrapper function: it takes a question and prints the result
-              itself.
-            </li>
-            <li>
-              <code>rag_graph.invoke({...})</code> — run the graph with initial
-              state: the question is filled, the other fields are empty. The
-              return value is the final state.
-            </li>
-            <li>
-              <code>print("\nAnswer:")</code> and
-              <code>print(result["answer"])</code> — print the answer;
-              <code>\n</code> is a newline for readability. Then the loop
-              <code>for source in result["sources"]</code> prints each source.
-            </li>
-            <li>
-              <code>if __name__ == "__main__":</code> — the code below runs only
-              when the file is executed directly, not when imported as a module.
-            </li>
-            <li>
-              <code>len(sys.argv) &gt; 1 and sys.argv[1] == "index"</code> — if
-              the word <code>index</code> appears after the file name, run
-              indexing.
-            </li>
-            <li>
-              <code>else:</code> — otherwise enter question mode. First check
-              <code>vector_store._collection.count() == 0</code>: if the store
-              is empty, suggest the command and exit via
-              <code>sys.exit(1)</code> with an error code.
-            </li>
-            <li>
-              <code>while True:</code> — infinite dialogue loop.
-              <code>input(...).strip()</code> reads the question and strips
-              edge whitespace.
-            </li>
-            <li>
-              <code>if question.lower() in {"exit", "quit"}: break</code> —
-              “exit” or “quit” break the loop.
-              <code>if question: ask_question(question)</code> — skip empty
-              lines; send the rest into RAG.
-            </li>
-          </ul>
+          <b class="t">Narration</b>
+          <p>And the final step we need to create the ask_question function.</p>
         </div>
+        <div class="cb">
+          <span class="lang">python</span>
+          <pre>
+            <code>def ask_question(question: str) -> None:
+    result = rag_graph.invoke({
+        "question": question,
+        "context": "",
+        "sources": [],
+        "answer": "",
+    })</code>
+          </pre>
+        </div>
+
+        <div class="say">
+          <b class="t">Narration</b>
+          <p>
+            Here rag_graph.invoke() is used to run the graph with the initial
+            state.
+          </p>
+        </div>
+
+        <div class="cb">
+          <span class="lang">python</span>
+          <pre>
+            <code>def ask_question(question: str) -> None:
+    result = rag_graph.invoke({
+        "question": question,
+        "context": "",
+        "sources": [],
+        "answer": "",
+    })</code>
+          </pre>
+        </div>
+
+        <div class="say">
+          <b class="t">Narration</b>
+          <p>Also we need to print the answer and sources.</p>
+        </div>
+
+        <div class="cb">
+          <span class="lang">python</span>
+          <pre>
+            <code>def ask_question(question: str) -> None:
+    result = rag_graph.invoke({
+        "question": question,
+        "context": "",
+        "sources": [],
+        "answer": "",
+    })
+
+    print("\nAnswer:")
+    print(result["answer"])
+
+    print("\nSources:")
+    for source in result["sources"]:
+        print(f"- {source}")</code>
+          </pre>
+        </div>
+      </section>
+      <section id="b11">
+        <h2>Block 14. FINAL demo</h2>
+
         <div class="say">
           <b class="t">Narration · Closing</b>
           <p>
-            Let’s run it. First <code>uv run main.py index</code> — indexing —
-            then <code>uv run main.py</code> — and ask a question about the
-            page. You’ll see an answer and a source — congratulations, your own
-            RAG is working.
+            Let’s run it. First of all we should index our web page. for this
+            purpose we need to run the application with the index argument.
           </p>
+          <div class="cb">
+            <span class="lang">bash</span>
+            <pre><code>uv run main.py index</code></pre>
+          </div>
+
+          <p>After indexing we can ask a question about the page.</p>
+          <p>
+            running the application without the <code>index</code> argument to
+            enter dialogue mode.
+          </p>
+
+          <div class="cb">
+            <span class="lang">bash</span>
+            <pre><code>uv run main.py</code></pre>
+          </div>
+          <p>You can ask a question about the page.</p>
+          <div class="cb">
+            <span class="lang">bash</span>
+            <pre><code>May I get a promo code for the Advanced course?</code></pre>
+          </div>
+
+          <p>
+            If You see an answer and a source? congratulations, your own RAG is
+            working.
+          </p>
+
+          <p>
+            If you go to the page you will see the promocode block, it means
+            that our RAG is working correctly. If you ask something different
+            that is not on the page, you will see the answer "I don't know".
+            let's try it.
+          </p>
+          <div class="cb">
+            <span class="lang">bash</span>
+            <pre><code>What is the capital of France?</code></pre>
+          </div>
+          <p>You see "I don't know".</p>
+          <p>Congratulations, your own RAG is working correctly.</p>
           <p>
             And the answer to the opening question: RAG usually breaks not on
             the model, but on the data and the chunking. Bad text and poor
             chunks are the main reason for weak answers. Experiment with
-            <code>chunk_size</code> and <code>k</code>.
-          </p>
-          <p>
-            In the next video we’ll wrap all of this in FastAPI and get a real
-            API service. And now — an important block for those who want to go
-            further.
+            <code>chunk_size</code> and <code>k</code>. There are many other
+            factors that can affect the quality of the answer, but I will tel
+            about them in my advanced part of the course.
           </p>
         </div>
       </section>
       <section id="b11">
-        <h2>Block 11. Promo code for the Advanced course</h2>
+        <h2>Block 15. Promo code for the Advanced course</h2>
         <div class="say">
           <b class="t">Narration · Final block</b>
           <p>
@@ -1167,37 +1144,37 @@ if __name__ == "__main__":
             agents, and complex graphs — on Udemy you can get a discount with
             the coupon now on screen.
           </p>
-          <p>
-            Copy the promo code with the button below and enter it at checkout
-            on Udemy. I’ll leave the course link in the video description.
-            Thanks for watching to the end — see you in the next lesson!
-          </p>
         </div>
         <div class="cb">
           <span class="lang">promo code</span>
           <pre><code>PROMO_CODE_HERE</code></pre>
         </div>
         <div class="say">
-          <b class="t">Note for the author</b>
+          <b class="t">Narration</b>
           <p>
-            Replace <code>PROMO_CODE_HERE</code> in the block above with a real
-            Udemy coupon and add the course link to the video description.
+            Copy the promo code with the button below and enter it at checkout
+            on Udemy. I’ll leave the course link in the video description.
+            Thanks for watching to the end — see you in the next lesson!
           </p>
         </div>
       </section>
     </main>
     <script>
       document.querySelectorAll("section").forEach(function (s) {
+        var h2 = s.querySelector("h2");
+        if (!h2) return;
         var a = document.createElement("a");
         a.href = "#" + s.id;
-        a.textContent = s.querySelector("h2").textContent.split(".")[0];
+        a.textContent = h2.textContent.split(".")[0];
         document.getElementById("nav").appendChild(a);
       });
       document.querySelectorAll(".cb").forEach(function (b) {
+        var code = b.querySelector("code");
+        if (!code) return;
         var btn = document.createElement("button");
         btn.textContent = "Copy";
         btn.onclick = function () {
-          var t = b.querySelector("code").innerText;
+          var t = code.innerText;
           function ok() {
             btn.textContent = "Copied ✓";
             setTimeout(function () {
