@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section: Streaming in LangGraph — four lessons + SSE</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --panel-2: #1e222b;
+    --text: #e6e8ee;
+    --muted: #9aa3b2;
+    --accent: #6ea8fe;
+    --accent-2: #7ee787;
+    --warn: #ffb86b;
+    --border: #2a2f3a;
+    --code-bg: #0b0e13;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    max-width: 1500px;
+    margin: 0 auto;
+    min-height: 100vh;
+  }
+  aside {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 24px 16px;
+    border-right: 1px solid var(--border);
+    background: var(--panel);
+  }
+  aside h2 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin: 20px 0 8px;
+  }
+  aside h2:first-child { margin-top: 0; }
+  aside nav a {
+    display: block;
+    padding: 6px 10px;
+    border-radius: 6px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 13.5px;
+    margin-bottom: 2px;
+    transition: background 0.15s, color 0.15s;
+    border-left: 2px solid transparent;
+  }
+  aside nav a:hover { background: var(--panel-2); color: var(--accent); }
+  aside nav a .time {
+    display: inline-block;
+    min-width: 48px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    font-size: 11.5px;
+  }
+  aside nav a.lesson-link {
+    font-weight: 600;
+    color: var(--accent);
+    padding: 8px 10px;
+    margin-top: 8px;
+    background: rgba(110, 168, 254, 0.08);
+    border-left: 2px solid var(--accent);
+  }
+  aside nav a.advanced-link {
+    font-weight: 600;
+    color: var(--accent-2);
+    padding: 8px 10px;
+    margin-top: 8px;
+    background: rgba(126, 231, 135, 0.08);
+    border-left: 2px solid var(--accent-2);
+  }
+  main { padding: 40px 48px 80px; max-width: 960px; }
+  header.hero {
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  header.hero h1 {
+    font-size: 34px;
+    line-height: 1.2;
+    margin: 0 0 12px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  header.hero .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  header.hero .meta span::before {
+    content: "•";
+    margin-right: 6px;
+    color: var(--accent);
+  }
+  header.hero .meta span:first-child::before { content: none; }
+  .lesson-header {
+    margin: 60px 0 32px;
+    padding: 24px 28px;
+    background: linear-gradient(135deg, rgba(110, 168, 254, 0.12), rgba(126, 231, 135, 0.06));
+    border: 1px solid rgba(110, 168, 254, 0.3);
+    border-radius: 12px;
+  }
+  .lesson-header.advanced {
+    background: linear-gradient(135deg, rgba(126, 231, 135, 0.12), rgba(110, 168, 254, 0.06));
+    border-color: rgba(126, 231, 135, 0.35);
+  }
+  .lesson-header .lesson-num {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent-2);
+    background: rgba(126, 231, 135, 0.12);
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-bottom: 10px;
+  }
+  .lesson-header.advanced .lesson-num {
+    color: var(--accent);
+    background: rgba(110, 168, 254, 0.12);
+  }
+  .lesson-header h2 {
+    font-size: 26px;
+    margin: 0 0 10px;
+    color: var(--text);
+  }
+  .lesson-header .goal {
+    color: var(--muted);
+    font-size: 15px;
+    margin: 0;
+  }
+  .lesson-header .goal strong { color: var(--text); }
+  .advanced-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #0b0e13;
+    background: var(--accent-2);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  section.chapter {
+    margin-bottom: 40px;
+    scroll-margin-top: 20px;
+  }
+  section.chapter h3 {
+    font-size: 20px;
+    margin: 0 0 4px;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  section.chapter h3 .time-badge {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    background: var(--panel-2);
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    font-variant-numeric: tabular-nums;
+  }
+  section.chapter h3 .num {
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .voice {
+    border-left: 3px solid var(--accent);
+    background: var(--panel);
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 8px 8px 0;
+    color: #cfd6e4;
+    font-style: italic;
+  }
+  .voice::before {
+    content: "🎙 Voice";
+    display: block;
+    font-style: normal;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .screen {
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: 12px 0;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .screen::before {
+    content: "🖥 On screen";
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent-2);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .screen p { margin: 6px 0; }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 13.5px;
+    line-height: 1.55;
+    margin: 12px 0;
+  }
+  code {
+    font-family: "SF Mono", "JetBrains Mono", Consolas, "Liberation Mono", monospace;
+    font-size: 0.92em;
+  }
+  p code, li code, td code {
+    background: var(--panel-2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    color: #e6c07b;
+  }
+  pre code { color: #e6e8ee; }
+  .kw { color: #ff7b72; }
+  .str { color: #a5d6ff; }
+  .cm { color: #8b949e; font-style: italic; }
+  .fn { color: #d2a8ff; }
+  .num { color: #79c0ff; }
+  .var { color: #ffa657; }
+  .added { background: rgba(126, 231, 135, 0.12); display: inline-block; width: 100%; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    background: var(--panel-2);
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  tr:hover td { background: rgba(110, 168, 254, 0.04); }
+  .checklist {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0;
+  }
+  .checklist li {
+    padding: 8px 12px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .checklist li::before {
+    content: "✓";
+    color: var(--accent-2);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .notes {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--warn);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+  }
+  .notes h4 {
+    margin: 0 0 10px;
+    font-size: 15px;
+    color: var(--warn);
+  }
+  .notes ul { margin: 0; padding-left: 20px; }
+  .notes li { margin-bottom: 6px; font-size: 14px; }
+  .install {
+    background: rgba(255, 184, 107, 0.08);
+    border: 1px solid rgba(255, 184, 107, 0.4);
+    border-left: 3px solid var(--warn);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+  }
+  .install h4 {
+    margin: 0 0 8px;
+    font-size: 15px;
+    color: var(--warn);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .install h4::before { content: "📦"; }
+  .install p { margin: 8px 0; font-size: 14px; }
+  .advanced-teaser {
+    background: linear-gradient(135deg, rgba(126, 231, 135, 0.08), rgba(110, 168, 254, 0.04));
+    border: 1px dashed rgba(126, 231, 135, 0.5);
+    padding: 20px 24px;
+    border-radius: 12px;
+    margin: 32px 0 16px;
+  }
+  .advanced-teaser h4 {
+    margin: 0 0 8px;
+    font-size: 16px;
+    color: var(--accent-2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .advanced-teaser h4::before { content: "🚀"; }
+  .advanced-teaser p {
+    margin: 6px 0;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .advanced-teaser strong { color: var(--text); }
+  .step {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #0b0e13;
+    font-weight: 700;
+    font-size: 14px;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .mode-tag {
+    display: inline-block;
+    font-family: "SF Mono", "JetBrains Mono", Consolas, monospace;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(110, 168, 254, 0.12);
+    color: var(--accent);
+    border: 1px solid rgba(110, 168, 254, 0.25);
+    margin-bottom: 8px;
+  }
+  .mode-tag.updates { background: rgba(255, 184, 107, 0.12); color: var(--warn); border-color: rgba(255, 184, 107, 0.3); }
+  .mode-tag.messages { background: rgba(126, 231, 135, 0.12); color: var(--accent-2); border-color: rgba(126, 231, 135, 0.3); }
+  footer {
+    margin-top: 80px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+    text-align: center;
+  }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    aside {
+      position: static;
+      height: auto;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+    }
+    aside nav { display: flex; flex-wrap: wrap; gap: 4px; }
+    aside nav a { flex: 1 1 auto; }
+    main { padding: 24px 20px 60px; }
+    header.hero h1 { font-size: 24px; }
+    .lesson-header { padding: 18px 20px; }
+    .lesson-header h2 { font-size: 22px; }
+  }
+  @media print {
+    aside { display: none; }
+    .layout { grid-template-columns: 1fr; }
+    body { background: #fff; color: #000; }
+    main { max-width: 100%; padding: 0; }
+    pre { background: #f5f5f5; border-color: #ddd; }
+    pre code { color: #000; }
+    .kw { color: #a31515; }
+    .str { color: #0451a5; }
+    .cm { color: #008000; }
+    .fn { color: #795e26; }
+    .num { color: #098658; }
+    .var { color: #e36c0a; }
+    .voice, .screen, .notes, .lesson-header, .install, .advanced-teaser { background: #f8f8f8; }
+    table th { background: #f0f0f0; color: #000; }
+    header.hero h1 { -webkit-text-fill-color: #000; color: #000; }
+    .step { background: #000; color: #fff; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <aside>
+    <h2>Section</h2>
+    <nav>
+      <a href="#section-intro">Section overview</a>
+    </nav>
+
+    <h2>Lesson 1</h2>
+    <nav>
+      <a href="#l1-intro" class="lesson-link">Three streaming modes</a>
+      <a href="#l1-prep"><span class="time">1:00</span> Setup</a>
+      <a href="#l1-values"><span class="time">2:00</span> values</a>
+      <a href="#l1-updates"><span class="time">5:00</span> updates</a>
+      <a href="#l1-messages"><span class="time">8:00</span> messages</a>
+      <a href="#l1-compare"><span class="time">11:00</span> Comparison</a>
+    </nav>
+
+    <h2>Lesson 2</h2>
+    <nav>
+      <a href="#l2-intro" class="lesson-link">Streaming in RAG</a>
+      <a href="#l2-step1"><span class="time">0:40</span> Step 1: streaming</a>
+      <a href="#l2-step2"><span class="time">2:30</span> Step 2: astream</a>
+      <a href="#l2-step3"><span class="time">7:00</span> Step 3: entry point</a>
+      <a href="#l2-run"><span class="time">8:30</span> Run</a>
+      <a href="#l2-sources"><span class="time">9:30</span> Sources</a>
+      <a href="#l2-summary"><span class="time">12:00</span> Summary</a>
+    </nav>
+
+    <h2>Lesson 3</h2>
+    <nav>
+      <a href="#l3-intro" class="lesson-link">FastAPI wrapper</a>
+      <a href="#l3-install"><span class="time">0:30</span> Install</a>
+      <a href="#l3-schemas"><span class="time">2:00</span> Schemas</a>
+      <a href="#l3-server"><span class="time">5:00</span> Server</a>
+      <a href="#l3-index"><span class="time">8:00</span> Index route</a>
+      <a href="#l3-run"><span class="time">10:00</span> Run</a>
+      <a href="#l3-test"><span class="time">12:00</span> Test</a>
+      <a href="#l3-summary"><span class="time">14:00</span> Summary</a>
+    </nav>
+
+    <h2>Lesson 4</h2>
+    <nav>
+      <a href="#l4-intro" class="lesson-link">Optional URL indexing</a>
+      <a href="#l4-schema"><span class="time">1:00</span> Schema</a>
+      <a href="#l4-route"><span class="time">3:00</span> Route</a>
+      <a href="#l4-test"><span class="time">6:00</span> Test</a>
+      <a href="#l4-summary"><span class="time">8:00</span> Summary</a>
+    </nav>
+
+    <h2>Advanced</h2>
+    <nav>
+      <a href="#adv-intro" class="advanced-link">SSE streaming</a>
+      <a href="#adv-sse"><span class="time">1:00</span> What is SSE</a>
+      <a href="#adv-why"><span class="time">3:30</span> Why SSE</a>
+      <a href="#adv-server"><span class="time">5:30</span> Server</a>
+      <a href="#adv-test"><span class="time">9:00</span> Test</a>
+      <a href="#adv-client"><span class="time">11:00</span> Client</a>
+      <a href="#adv-summary"><span class="time">14:00</span> Summary</a>
+    </nav>
+  </aside>
+
+  <main>
+    <header class="hero">
+      <h1>Streaming in LangGraph: modes, CLI, FastAPI, SSE</h1>
+      <div class="meta">
+        <span>LangGraph · Ollama · FastAPI · Pydantic</span>
+        <span>4 lessons + advanced · ~55 minutes</span>
+        <span>Intermediate level</span>
+      </div>
+      <p style="color: var(--muted); margin-top: 16px; font-size: 15px;">
+        A four-lesson section plus an advanced SSE lesson. Lessons 1–2 cover the three streaming modes
+        and the console stream. Lessons 3–4 wrap the app in FastAPI + Pydantic: base routes, a JSON <code>/ask</code>
+        endpoint, and an <code>/index</code> endpoint with an optional URL. The advanced lesson adds SSE streaming
+        for the browser.
+      </p>
+    </header>
+
+    <!-- ==================== SECTION INTRO ==================== -->
+    <section class="chapter" id="section-intro">
+      <h2 style="font-size: 24px; margin-bottom: 16px; color: var(--accent);">Section overview</h2>
+      <div class="voice">
+        LangGraph can stream at three levels, and beginners often get confused about which mode to pick. That's why we split this topic into four lessons plus an advanced one. In the first lesson you'll see all three modes on the same graph — the difference is exactly one line of code. In the second we apply the right mode to our RAG agent and get a live token stream in the terminal. In the third we wrap the app in FastAPI and Pydantic: base routes, request and response schemas, and a run example. In the fourth we add an optional URL parameter to the indexing route so the same endpoint can re-index a different page. And in the advanced lesson we add SSE streaming — the transport that lets a browser consume tokens in real time.
+      </div>
+      <table>
+        <thead>
+          <tr><th>Lesson</th><th>Topic</th><th>Outcome</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Lesson 1</strong></td>
+            <td>Three streaming modes: <code>values</code>, <code>updates</code>, <code>messages</code></td>
+            <td>The viewer runs one script with three modes and understands the difference</td>
+          </tr>
+          <tr>
+            <td><strong>Lesson 2</strong></td>
+            <td>Streaming output in a RAG agent</td>
+            <td>A working CLI token stream</td>
+          </tr>
+          <tr>
+            <td><strong>Lesson 3</strong></td>
+            <td>FastAPI + Pydantic wrapper</td>
+            <td>A running web app with <code>/health</code>, <code>/ask</code>, and <code>/index</code> routes</td>
+          </tr>
+          <tr>
+            <td><strong>Lesson 4</strong></td>
+            <td>Optional URL for indexing</td>
+            <td>The same <code>/index</code> route accepts a custom URL</td>
+          </tr>
+          <tr>
+            <td><strong>Advanced</strong></td>
+            <td>SSE streaming</td>
+            <td>A <code>/stream</code> endpoint that pushes tokens to the browser via <code>EventSource</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ==================== LESSON 1 ==================== -->
+    <div class="lesson-header" id="l1-intro">
+      <span class="lesson-num">Lesson 1</span>
+      <h2>Three streaming modes: values, updates, messages</h2>
+      <p class="goal"><strong>Goal:</strong> run <code>astream</code> with three different <code>stream_mode</code> values on the same graph and see what each one returns.</p>
+    </div>
+
+    <section class="chapter">
+      <h3><span class="num">0.</span> Lesson intro <span class="time-badge">0:00–1:00</span></h3>
+      <div class="screen">
+        <p>Slide with the three modes and the tagline: "one graph, one line — three different behaviors".</p>
+      </div>
+      <div class="voice">
+        In this lesson we're not going to apply anything. The goal is to understand the tool. LangGraph has three streaming modes, and the choice between them determines what you see in the stream. We'll take our existing RAG graph and run it three times — with <code>values</code>, <code>updates</code>, and <code>messages</code>. The code difference is exactly one line.
+      </div>
+    </section>
+
+    <section class="chapter" id="l1-prep">
+      <h3><span class="num">1.</span> Setup: enable <code>streaming=True</code> <span class="time-badge">1:00–2:00</span></h3>
+      <div class="screen">
+        <p>Open <code>main.py</code>, find the <code>ChatOpenAI</code> constructor, add <code>streaming=True</code>.</p>
+      </div>
+<pre><code>llm = <span class="fn">ChatOpenAI</span>(
+    model=os.<span class="fn">getenv</span>(<span class="str">"CHAT_MODEL"</span>, <span class="str">"llama3.1"</span>),
+    base_url=os.<span class="fn">getenv</span>(<span class="str">"LLM_API_BASE"</span>, <span class="str">"http://127.0.0.1:11434/v1"</span>),
+    api_key=os.<span class="fn">getenv</span>(<span class="str">"LLM_API_KEY"</span>, <span class="str">"ollama"</span>),
+    temperature=<span class="num">0</span>,
+<span class="added">    streaming=<span class="kw">True</span>,  <span class="cm"># the LLM streams tokens</span></span>
+)</code></pre>
+      <div class="voice">
+        One line — <code>streaming=True</code>. It's needed for all three modes, but it's critical for <code>messages</code>: without it LangChain won't ask Ollama to stream tokens, and the <code>messages</code> mode won't produce a gradual stream.
+      </div>
+    </section>
+
+    <section class="chapter" id="l1-values">
+      <h3><span class="num">2.</span> Mode <code>values</code> <span class="time-badge">2:00–5:00</span></h3>
+      <span class="mode-tag">stream_mode="values"</span>
+      <div class="screen">
+        <p>Create a file <code>inspect_stream.py</code>. Import the existing graph and run <code>astream</code> with the <code>values</code> mode.</p>
+      </div>
+<pre><code><span class="cm"># inspect_stream.py</span>
+<span class="kw">import</span> asyncio
+<span class="kw">from</span> main <span class="kw">import</span> rag_graph
+
+MODE = <span class="str">"values"</span>
+
+<span class="kw">async def</span> <span class="fn">inspect</span>(question: <span class="var">str</span>):
+    <span class="fn">print</span>(<span class="str">f"\n=== stream_mode = {MODE} ===\n"</span>)
+    <span class="kw">async for</span> chunk <span class="kw">in</span> rag_graph.<span class="fn">astream</span>(
+        {<span class="str">"question"</span>: question, <span class="str">"context"</span>: <span class="str">""</span>, <span class="str">"sources"</span>: [], <span class="str">"answer"</span>: <span class="str">""</span>},
+        stream_mode=MODE,
+    ):
+        <span class="fn">print</span>(chunk)
+        <span class="fn">print</span>(<span class="str">"-"</span> * <span class="num">60</span>)
+
+<span class="kw">if</span> __name__ == <span class="str">"__main__"</span>:
+    asyncio.<span class="fn">run</span>(<span class="fn">inspect</span>(<span class="str">"What is the promo code?"</span>))</code></pre>
+      <div class="voice">
+        The <code>values</code> mode returns the full graph state after each node. Watch: first the empty state, then <code>retrieve</code> fills in <code>context</code> and <code>sources</code>, then <code>generate</code> fills in <code>answer</code>. This is handy for debugging: you can see how data flows through the whole graph.
+      </div>
+    </section>
+
+    <section class="chapter" id="l1-updates">
+      <h3><span class="num">3.</span> Mode <code>updates</code> <span class="time-badge">5:00–8:00</span></h3>
+      <span class="mode-tag updates">stream_mode="updates"</span>
+      <div class="screen">
+        <p>Change one line: <code>MODE = "updates"</code>. Run again.</p>
+      </div>
+<pre><code>{<span class="str">'retrieve'</span>: {<span class="str">'context'</span>: <span class="str">'The promo code is ...'</span>, <span class="str">'sources'</span>: [<span class="str">'https://...'</span>]}}
+------------------------------------------------------------
+{<span class="str">'generate'</span>: {<span class="str">'answer'</span>: <span class="str">'The promo code is SMART2024'</span>}}
+------------------------------------------------------------</code></pre>
+      <div class="voice">
+        The <code>updates</code> mode returns only what a node changed. The key is the node name, the value is its return. Watch: <code>retrieve</code> returned <code>context</code> and <code>sources</code>, <code>generate</code> returned <code>answer</code>. This is handy for logs and for collecting <code>sources</code> in parallel with the token stream.
+      </div>
+    </section>
+
+    <section class="chapter" id="l1-messages">
+      <h3><span class="num">4.</span> Mode <code>messages</code> <span class="time-badge">8:00–11:00</span></h3>
+      <span class="mode-tag messages">stream_mode="messages"</span>
+      <div class="screen">
+        <p>Change the line to <code>MODE = "messages"</code>. The chunk structure is different here — it's a <code>(message_chunk, metadata)</code> tuple.</p>
+      </div>
+<pre><code>MODE = <span class="str">"messages"</span>
+
+<span class="kw">async for</span> message_chunk, metadata <span class="kw">in</span> rag_graph.<span class="fn">astream</span>(
+    {<span class="str">"question"</span>: question, <span class="str">"context"</span>: <span class="str">""</span>, <span class="str">"sources"</span>: [], <span class="str">"answer"</span>: <span class="str">""</span>},
+    stream_mode=MODE,
+):
+    <span class="fn">print</span>(<span class="fn">repr</span>(message_chunk.content), <span class="str">"| node ="</span>, metadata.<span class="fn">get</span>(<span class="str">"langgraph_node"</span>))</code></pre>
+<pre><code><span class="str">'The'</span> | node = generate
+<span class="str">' promo'</span> | node = generate
+<span class="str">' code'</span> | node = generate</code></pre>
+      <div class="voice">
+        Here it is — the mode this whole section is about. <code>messages</code> returns LLM tokens as they are generated. Note: the chunk is a tuple of two elements, <code>message_chunk</code> and <code>metadata</code>. The metadata contains the <code>langgraph_node</code> key — the name of the node that produced this token.
+      </div>
+    </section>
+
+    <section class="chapter" id="l1-compare">
+      <h3><span class="num">5.</span> Comparison and homework <span class="time-badge">11:00–12:00</span></h3>
+      <table>
+        <thead>
+          <tr><th>Mode</th><th>What it returns</th><th>When to use</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>values</code></td><td>full state after a node</td><td>graph debugging</td></tr>
+          <tr><td><code>updates</code></td><td>only the delta from a node</td><td>logs, collecting <code>sources</code> in parallel with the stream</td></tr>
+          <tr><td><code>messages</code></td><td>LLM tokens + node metadata</td><td>live output to the UI</td></tr>
+        </tbody>
+      </table>
+      <div class="voice">
+        Lesson takeaway: three modes, the difference is one line. Homework: run <code>inspect_stream.py</code> with <code>stream_mode="updates"</code> and collect <code>sources</code> from the <code>retrieve</code> node's chunk into a separate list. That's the preparation for lesson 2.
+      </div>
+    </section>
+
+    <!-- ==================== LESSON 2 ==================== -->
+    <div class="lesson-header" id="l2-intro">
+      <span class="lesson-num">Lesson 2</span>
+      <h2>Adding streaming output to a RAG agent</h2>
+      <p class="goal"><strong>Goal:</strong> turn the synchronous <code>ask_question</code> into an asynchronous <code>ask_question_stream</code> and see tokens in the terminal.</p>
+    </div>
+
+    <section class="chapter">
+      <h3><span class="num">0.</span> Lesson intro <span class="time-badge">0:00–0:40</span></h3>
+      <div class="voice">
+        In the previous lesson we learned that the <code>messages</code> mode returns tokens and node metadata. Now let's apply it to our RAG agent. We'll make three changes: enable <code>streaming=True</code> on the model, write an async wrapper with <code>astream</code>, and switch the entry point.
+      </div>
+    </section>
+
+    <section class="chapter" id="l2-step1">
+      <h3><span class="step">1</span> Enable token streaming on the LLM <span class="time-badge">0:40–2:30</span></h3>
+<pre><code>llm = <span class="fn">ChatOpenAI</span>(
+    model=os.<span class="fn">getenv</span>(<span class="str">"CHAT_MODEL"</span>, <span class="str">"llama3.1"</span>),
+    base_url=os.<span class="fn">getenv</span>(<span class="str">"LLM_API_BASE"</span>, <span class="str">"http://127.0.0.1:11434/v1"</span>),
+    api_key=os.<span class="fn">getenv</span>(<span class="str">"LLM_API_KEY"</span>, <span class="str">"ollama"</span>),
+    temperature=<span class="num">0</span>,
+    streaming=<span class="kw">True</span>,  <span class="cm"># the LLM streams tokens</span>
+)</code></pre>
+      <div class="voice">
+        If you skipped lesson 1 — here's the only thing you need from it for this lesson: <code>streaming=True</code> in the <code>ChatOpenAI</code> constructor. Without it, <code>stream_mode="messages"</code> won't give you a gradual stream.
+      </div>
+    </section>
+
+    <section class="chapter" id="l2-step2">
+      <h3><span class="step">2</span> Write the async wrapper with <code>astream</code> <span class="time-badge">2:30–7:00</span></h3>
+<pre><code><span class="kw">async def</span> <span class="fn">ask_question_stream</span>(question: <span class="var">str</span>) -&gt; <span class="var">None</span>:
+    <span class="fn">print</span>(<span class="str">"\nAnswer:"</span>)
+
+    <span class="kw">async for</span> message_chunk, metadata <span class="kw">in</span> rag_graph.<span class="fn">astream</span>(
+        {
+            <span class="str">"question"</span>: question,
+            <span class="str">"context"</span>: <span class="str">""</span>,
+            <span class="str">"sources"</span>: [],
+            <span class="str">"answer"</span>: <span class="str">""</span>,
+        },
+        stream_mode=<span class="str">"messages"</span>,
+    ):
+        <span class="kw">if</span> (
+            message_chunk.content
+            <span class="kw">and</span> metadata.<span class="fn">get</span>(<span class="str">"langgraph_node"</span>) == <span class="str">"generate"</span>
+        ):
+            <span class="fn">print</span>(message_chunk.content, end=<span class="str">""</span>, flush=<span class="kw">True</span>)
+
+    <span class="fn">print</span>()</code></pre>
+      <div class="voice">
+        The function is async — <code>astream</code> returns an async generator. Inside the <code>async for</code> loop we get a pair: the message chunk and the metadata. The <code>langgraph_node</code> key in the metadata tells us which node produced this chunk. We filter by <code>generate</code>. Then we print the content: <code>end=""</code> glues tokens into one line, <code>flush=True</code> makes them appear immediately.
+      </div>
+    </section>
+
+    <section class="chapter" id="l2-step3">
+      <h3><span class="step">3</span> Switch the entry point to the stream <span class="time-badge">7:00–8:30</span></h3>
+<pre><code><span class="kw">if</span> question:
+    asyncio.<span class="fn">run</span>(<span class="fn">ask_question_stream</span>(question))</code></pre>
+      <div class="voice">
+        <code>ask_question_stream</code> is an async function, so we launch it via <code>asyncio.run</code>. You can keep the old synchronous <code>ask_question</code> in the file.
+      </div>
+    </section>
+
+    <section class="chapter" id="l2-run">
+      <h3><span class="num">4.</span> Run and observe the result <span class="time-badge">8:30–9:30</span></h3>
+<pre><code><span class="str">Ask a question (or 'exit'):</span> What is the promo code?
+
+<span class="str">Answer:</span>
+The promo code for the advanced course is SMART2024...</code></pre>
+      <div class="voice">
+        There's the stream. Tokens appear as they are generated. Subjectively the answer arrives faster, even though the total time is the same — the user simply sees progress.
+      </div>
+    </section>
+
+    <section class="chapter" id="l2-sources">
+      <h3><span class="num">5.</span> Bonus: <code>Sources</code> during streaming <span class="time-badge">9:30–10:30</span></h3>
+      <div class="voice">
+        In the <code>messages</code> mode, sources don't come through — only tokens. There are two approaches. The first is to call <code>retrieve</code> again after the stream: cheap, but duplicates the search. The second is to listen to <code>stream_mode=["messages", "updates"]</code> in parallel and collect <code>sources</code> from <code>updates</code>. For the educational example we'll stick with the first.
+      </div>
+    </section>
+
+    <section class="chapter" id="l2-summary">
+      <h3><span class="num">6.</span> Summary and homework <span class="time-badge">12:00–12:45</span></h3>
+      <ul class="checklist">
+        <li><code>streaming=True</code> in the <code>ChatOpenAI</code> constructor</li>
+        <li><code>async def ask_question_stream(...)</code> with <code>astream(..., stream_mode="messages")</code></li>
+        <li><code>asyncio.run(ask_question_stream(...))</code> in <code>__main__</code></li>
+        <li>we understand that this is a local console stream, not a network protocol</li>
+      </ul>
+      <div class="voice">
+        Homework: add timing to <code>ask_question_stream</code> — measure time to the first token and to the last one. You'll see that streaming doesn't speed up generation, but it radically improves perceived performance. Next lesson — wrapping the app in FastAPI and Pydantic.
+      </div>
+    </section>
+
+    <!-- ==================== LESSON 3 ==================== -->
+    <div class="lesson-header" id="l3-intro">
+      <span class="lesson-num">Lesson 3</span>
+      <h2>FastAPI + Pydantic wrapper</h2>
+      <p class="goal"><strong>Goal:</strong> wrap the RAG app in a FastAPI service with typed request/response schemas via Pydantic, base routes (<code>/health</code>, <code>/ask</code>, <code>/index</code>), and a run example. SSE streaming is a separate advanced lesson.</p>
+    </div>
+
+    <section class="chapter">
+      <h3><span class="num">0.</span> Lesson intro <span class="time-badge">0:00–0:30</span></h3>
+      <div class="screen">
+        <p>Slide: on the left — the CLI app from lesson 2, on the right — a running web service with <code>/health</code>, <code>/ask</code>, and <code>/index</code> routes.</p>
+      </div>
+      <div class="voice">
+        So far our app runs in the terminal. That's fine for learning, but not for a real product. In this lesson we'll wrap the app in FastAPI and add Pydantic schemas for request and response. We'll get a running web service with three base routes: a health check, an ask endpoint that returns the full answer as JSON, and an index endpoint that triggers <code>index_documents</code>. This is the foundation. In the advanced lesson we'll add SSE on top of it so the ask endpoint can stream tokens to a browser.
+      </div>
+    </section>
+
+    <section class="chapter" id="l3-install">
+      <h3><span class="num">1.</span> Install FastAPI <span class="time-badge">0:30–2:00</span></h3>
+      <div class="install">
+        <h4>Before we start</h4>
+        <p>If you haven't installed FastAPI yet, run the following command in your terminal:</p>
+      </div>
+<pre><code>pip install <span class="str">"fastapi[standard]"</span></code></pre>
+      <div class="voice">
+        If you haven't installed FastAPI yet, do it now by running <code>pip install "fastapi[standard]"</code> in your terminal. The <code>[standard]</code> extra pulls in <code>uvicorn</code> — the ASGI server we'll use to run the app — and a few other goodies. If you're using <code>uv</code>, the equivalent is <code>uv add "fastapi[standard]"</code>. Pydantic ships with FastAPI, so you don't need a separate install.
+      </div>
+    </section>
+
+    <section class="chapter" id="l3-schemas">
+      <h3><span class="num">2.</span> Pydantic schemas for request and response <span class="time-badge">2:00–5:00</span></h3>
+      <div class="screen">
+        <p>Create a new file <code>schemas.py</code> next to <code>main.py</code>. Define four models: <code>AskRequest</code>, <code>AskResponse</code>, <code>IndexResponse</code>, and <code>HealthResponse</code>.</p>
+      </div>
+<pre><code><span class="cm"># schemas.py</span>
+<span class="kw">from</span> pydantic <span class="kw">import</span> BaseModel, Field
+
+
+<span class="kw">class</span> <span class="fn">AskRequest</span>(BaseModel):
+    question: <span class="var">str</span> = Field(
+        ...,
+        min_length=<span class="num">1</span>,
+        max_length=<span class="num">2000</span>,
+        description=<span class="str">"The user's question for the RAG agent"</span>,
+        examples=[<span class="str">"What is the promo code?"</span>],
+    )
+
+
+<span class="kw">class</span> <span class="fn">AskResponse</span>(BaseModel):
+    answer: <span class="var">str</span> = Field(..., description=<span class="str">"The generated answer"</span>)
+    sources: <span class="var">list</span>[<span class="var">str</span>] = Field(
+        default_factory=<span class="fn">list</span>,
+        description=<span class="str">"Source URLs used to generate the answer"</span>,
+    )
+
+
+<span class="kw">class</span> <span class="fn">IndexResponse</span>(BaseModel):
+    indexed: <span class="var">int</span> = Field(..., description=<span class="str">"Number of chunks indexed"</span>)
+    source: <span class="var">str</span> = Field(..., description=<span class="str">"The URL that was indexed"</span>)
+
+
+<span class="kw">class</span> <span class="fn">HealthResponse</span>(BaseModel):
+    status: <span class="var">str</span> = <span class="str">"ok"</span></code></pre>
+      <div class="voice">
+        Pydantic models describe the shape of the data going in and out. <code>AskRequest</code> has a single field <code>question</code> with validation: it can't be empty and can't exceed 2000 characters. <code>AskResponse</code> has <code>answer</code> and <code>sources</code>. <code>IndexResponse</code> tells the client how many chunks were indexed and from which URL. <code>HealthResponse</code> is for the health check route. These schemas do three things: validate incoming data, document the API automatically, and give you type hints in the editor.
+      </div>
+    </section>
+
+    <section class="chapter" id="l3-server">
+      <h3><span class="num">3.</span> FastAPI app with base routes <span class="time-badge">5:00–8:00</span></h3>
+      <div class="screen">
+        <p>Create <code>server.py</code>. Import the graph, <code>index_documents</code>, and the schemas, wire up three routes: <code>/health</code>, <code>/ask</code>, and <code>/index</code>.</p>
+      </div>
+<pre><code><span class="cm"># server.py</span>
+<span class="kw">from</span> fastapi <span class="kw">import</span> FastAPI
+
+<span class="kw">from</span> main <span class="kw">import</span> rag_graph, index_documents, SOURCE_URL
+<span class="kw">from</span> schemas <span class="kw">import</span> (
+    AskRequest,
+    AskResponse,
+    IndexResponse,
+    HealthResponse,
+)
+
+app = <span class="fn">FastAPI</span>(
+    title=<span class="str">"RAG Agent API"</span>,
+    version=<span class="str">"1.0.0"</span>,
+    description=<span class="str">"A simple RAG agent exposed over HTTP."</span>,
+)
+
+
+<span class="var">@app</span>.<span class="fn">get</span>(<span class="str">"/health"</span>, response_model=HealthResponse)
+<span class="kw">async def</span> <span class="fn">health</span>() -&gt; HealthResponse:
+    <span class="kw">return</span> <span class="fn">HealthResponse</span>(status=<span class="str">"ok"</span>)
+
+
+<span class="var">@app</span>.<span class="fn">post</span>(<span class="str">"/ask"</span>, response_model=AskResponse)
+<span class="kw">async def</span> <span class="fn">ask</span>(payload: AskRequest) -&gt; AskResponse:
+    result = rag_graph.<span class="fn">invoke</span>(
+        {
+            <span class="str">"question"</span>: payload.question,
+            <span class="str">"context"</span>: <span class="str">""</span>,
+            <span class="str">"sources"</span>: [],
+            <span class="str">"answer"</span>: <span class="str">""</span>,
+        }
+    )
+    <span class="kw">return</span> <span class="fn">AskResponse</span>(
+        answer=result[<span class="str">"answer"</span>],
+        sources=result[<span class="str">"sources"</span>],
+    )
+
+
+<span class="var">@app</span>.<span class="fn">post</span>(<span class="str">"/index"</span>, response_model=IndexResponse)
+<span class="kw">async def</span> <span class="fn">index</span>() -&gt; IndexResponse:
+    index_documents()
+    <span class="kw">return</span> <span class="fn">IndexResponse</span>(
+        indexed=vector_store._collection.<span class="fn">count</span>(),
+        source=SOURCE_URL,
+    )</code></pre>
+      <div class="voice">
+        Three routes, three responsibilities. <code>/health</code> returns a tiny JSON — useful for load balancers and monitoring. <code>/ask</code> takes <code>AskRequest</code>, runs the graph synchronously with <code>invoke</code>, and returns <code>AskResponse</code>. <code>/index</code> calls <code>index_documents()</code> — the same function you ran from the CLI with <code>main.py index</code> — and returns how many chunks are in the vector store and which URL was indexed. Notice that the <code>response_model</code> argument tells FastAPI to validate and serialize the output, and it also makes the schema appear in the auto-generated docs.
+      </div>
+      <div class="notes">
+        <h4>Why <code>invoke</code> and not <code>astream</code> here?</h4>
+        <ul>
+          <li>This lesson is about the FastAPI wrapper, not about streaming.</li>
+          <li><code>invoke</code> returns a complete answer as JSON — easy to test and reason about.</li>
+          <li>Streaming over HTTP is a separate topic with its own protocol (SSE). It's covered in the advanced lesson.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="chapter" id="l3-index">
+      <h3><span class="num">4.</span> The <code>/index</code> route in detail <span class="time-badge">8:00–10:00</span></h3>
+      <div class="screen">
+        <p>Zoom in on the <code>/index</code> route. Show the call to <code>index_documents()</code> and explain that it re-runs the whole pipeline: fetch, split, embed, store.</p>
+      </div>
+      <div class="voice">
+        The <code>/index</code> route is a thin wrapper around <code>index_documents</code> from <code>main.py</code>. When you call it, the server fetches the page from <code>SOURCE_URL</code>, splits it into chunks, generates embeddings, and writes them to ChromaDB. Depending on the page size this can take a few seconds — so the response comes back when indexing is complete, not immediately. In the next lesson we'll make the URL a parameter so the same route can index a different page without changing the code.
+      </div>
+      <div class="notes">
+        <h4>Idempotency note</h4>
+        <ul>
+          <li><code>index_documents</code> uses content-based hashes as document IDs, so re-indexing the same page doesn't create duplicates.</li>
+          <li>If the page changed, new chunks get new IDs and old ones stay in the store. A production system would also need a cleanup step — we'll mention it as homework.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="chapter" id="l3-run">
+      <h3><span class="num">5.</span> Run the server <span class="time-badge">10:00–12:00</span></h3>
+      <div class="screen">
+        <p>In the terminal, from the project folder:</p>
+      </div>
+<pre><code>uvicorn server:app --reload --port <span class="num">8000</span></code></pre>
+      <div class="screen">
+        <p>On screen — the startup log:</p>
+      </div>
+<pre><code>INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process
+INFO:     Application startup complete.</code></pre>
+      <div class="voice">
+        <code>uvicorn server:app</code> means: import the module <code>server</code> and use the object <code>app</code> inside it. <code>--reload</code> restarts the server on every code change — handy during development. <code>--port 8000</code> is the default, but it's good to be explicit. Once you see "Application startup complete", the service is up.
+      </div>
+      <div class="screen">
+        <p>Open the auto-generated docs in a browser:</p>
+      </div>
+<pre><code>http://127.0.0.1:8000/docs</code></pre>
+      <div class="voice">
+        FastAPI generates interactive API docs from your Pydantic schemas. Open <code>/docs</code> — you'll see all three routes, the request and response models, and a "Try it out" button. This is one of the biggest reasons to use Pydantic: the docs stay in sync with the code automatically.
+      </div>
+    </section>
+
+    <section class="chapter" id="l3-test">
+      <h3><span class="num">6.</span> Test the routes <span class="time-badge">12:00–14:00</span></h3>
+      <div class="screen">
+        <p>Health check:</p>
+      </div>
+<pre><code>curl http://127.0.0.1:8000/health
+<span class="cm"># {"status":"ok"}</span></code></pre>
+      <div class="screen">
+        <p>Index the default source:</p>
+      </div>
+<pre><code>curl -X POST http://127.0.0.1:8000/index
+<span class="cm"># {"indexed": 42, "source": "https://aismartcode.vercel.app/"}</span></code></pre>
+      <div class="screen">
+        <p>Ask a question:</p>
+      </div>
+<pre><code>curl -X POST http://127.0.0.1:8000/ask \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -d <span class="str">'{"question": "What is the promo code?"}'</span>
+
+<span class="cm"># {
+#   "answer": "The promo code for the advanced course is SMART2024.",
+#   "sources": ["https://aismartcode.vercel.app/"]
+# }</span></code></pre>
+      <div class="voice">
+        Three routes, three shapes. <code>/health</code> returns a tiny JSON. <code>/index</code> returns how many chunks are in the store and which URL was indexed. <code>/ask</code> takes a JSON body, runs the graph, and returns the full answer with sources. Notice that the answer is complete — no streaming yet. That's intentional: this lesson is about the wrapper, not about transport.
+      </div>
+      <div class="screen">
+        <p>Show a validation error for an empty question:</p>
+      </div>
+<pre><code>curl -X POST http://127.0.0.1:8000/ask \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -d <span class="str">'{"question": ""}'</span>
+
+<span class="cm"># 422 Unprocessable Entity
+# {"detail":[{"type":"string_too_short","loc":["body","question"], ...}]}</span></code></pre>
+      <div class="voice">
+        This is Pydantic doing its job. We didn't write any validation code — the <code>min_length=1</code> in the schema is enough. The error message is precise: which field, which constraint, what went wrong.
+      </div>
+    </section>
+
+    <section class="chapter" id="l3-summary">
+      <h3><span class="num">7.</span> Summary and homework <span class="time-badge">14:00–15:00</span></h3>
+      <ul class="checklist">
+        <li><code>pip install "fastapi[standard]"</code> — FastAPI + uvicorn</li>
+        <li>Pydantic schemas: <code>AskRequest</code>, <code>AskResponse</code>, <code>IndexResponse</code>, <code>HealthResponse</code></li>
+        <li>three base routes: <code>GET /health</code>, <code>POST /ask</code>, <code>POST /index</code></li>
+        <li><code>response_model</code> gives validation and auto-generated docs at <code>/docs</code></li>
+        <li>running the app: <code>uvicorn server:app --reload</code></li>
+      </ul>
+      <div class="voice">
+        Homework: add a cleanup step to <code>/index</code> so re-indexing the same page replaces old chunks instead of appending new ones. Next lesson — making the URL a parameter of the <code>/index</code> route.
+      </div>
+    </section>
+
+    <!-- ==================== LESSON 4 ==================== -->
+    <div class="lesson-header" id="l4-intro">
+      <span class="lesson-num">Lesson 4</span>
+      <h2>Optional URL for indexing</h2>
+      <p class="goal"><strong>Goal:</strong> extend the <code>/index</code> route so the client can pass a custom URL. When no URL is provided, the route falls back to <code>SOURCE_URL</code> from the environment.</p>
+    </div>
+
+    <section class="chapter">
+      <h3><span class="num">0.</span> Lesson intro <span class="time-badge">0:00–1:00</span></h3>
+      <div class="screen">
+        <p>Slide: the <code>/index</code> route with two call examples — one with no body, one with <code>{"url": "https://example.com"}</code>.</p>
+      </div>
+      <div class="voice">
+        In the previous lesson <code>/index</code> always used <code>SOURCE_URL</code> from the environment. That works for a single-site app, but in a real RAG service you often want to index a different page without redeploying. In this short lesson we'll make the URL an optional parameter: pass a body with a <code>url</code> field to index that page, or send no body to fall back to <code>SOURCE_URL</code>.
+      </div>
+    </section>
+
+    <section class="chapter" id="l4-schema">
+      <h3><span class="num">1.</span> Extend the schema <span class="time-badge">1:00–3:00</span></h3>
+      <div class="screen">
+        <p>Open <code>schemas.py</code>. Add an optional <code>IndexRequest</code> model. Update <code>IndexResponse</code> to include the URL that was indexed.</p>
+      </div>
+<pre><code><span class="cm"># schemas.py — add IndexRequest, keep IndexResponse as is</span>
+<span class="kw">from</span> pydantic <span class="kw">import</span> BaseModel, Field, HttpUrl
+
+
+<span class="kw">class</span> <span class="fn">IndexRequest</span>(BaseModel):
+    url: <span class="var">HttpUrl</span> | <span class="var">None</span> = Field(
+        default=<span class="kw">None</span>,
+        description=<span class="str">"Optional URL to index. If omitted, SOURCE_URL is used."</span>,
+        examples=[<span class="str">"https://aismartcode.vercel.app/"</span>],
+    )</code></pre>
+      <div class="voice">
+        Two things to notice. First, the field is optional: <code>url: HttpUrl | None = None</code>. If the client sends an empty body or no body at all, the route will use <code>SOURCE_URL</code>. Second, we use <code>HttpUrl</code> instead of plain <code>str</code> — Pydantic will validate that the input is a proper HTTP or HTTPS URL and reject anything else with a 422. That saves us a manual URL check in the route.
+      </div>
+    </section>
+
+    <section class="chapter" id="l4-route">
+      <h3><span class="num">2.</span> Update the route to accept the URL <span class="time-badge">3:00–6:00</span></h3>
+      <div class="screen">
+        <p>Open <code>server.py</code>. Change <code>index_documents</code> in <code>main.py</code> to accept an optional URL, then update the <code>/index</code> route.</p>
+      </div>
+      <div class="screen">
+        <p><strong>Step A.</strong> In <code>main.py</code>, make <code>index_documents</code> accept an optional URL:</p>
+      </div>
+<pre><code><span class="cm"># main.py</span>
+<span class="kw">def</span> <span class="fn">index_documents</span>(url: <span class="var">str</span> | <span class="var">None</span> = <span class="kw">None</span>) -&gt; <span class="var">int</span>:
+    target = url <span class="kw">or</span> SOURCE_URL
+    documents = <span class="fn">load_data</span>(target)
+    chunks = <span class="fn">split_documents</span>(documents)
+
+    ids = [
+        hashlib.<span class="fn">sha256</span>(
+            <span class="str">f"{chunk.metadata['source']}:{i}:{chunk.page_content}"</span>.<span class="fn">encode</span>()
+        ).<span class="fn">hexdigest</span>()
+        <span class="kw">for</span> i, chunk <span class="kw">in</span> <span class="fn">enumerate</span>(chunks)
+    ]
+
+    vector_store.<span class="fn">add_documents</span>(documents=chunks, ids=ids)
+    <span class="fn">print</span>(<span class="str">f"Indexed {len(chunks)} chunks from {target}"</span>)
+    <span class="kw">return</span> <span class="fn">len</span>(chunks)</code></pre>
+      <div class="screen">
+        <p><strong>Step B.</strong> In <code>server.py</code>, accept an optional <code>IndexRequest</code> body:</p>
+      </div>
+<pre><code><span class="cm"># server.py</span>
+<span class="var">@app</span>.<span class="fn">post</span>(<span class="str">"/index"</span>, response_model=IndexResponse)
+<span class="kw">async def</span> <span class="fn">index</span>(payload: IndexRequest | <span class="var">None</span> = <span class="kw">None</span>) -&gt; IndexResponse:
+    url = <span class="fn">str</span>(payload.url) <span class="kw">if</span> payload <span class="kw">and</span> payload.url <span class="kw">else</span> SOURCE_URL
+    count = <span class="fn">index_documents</span>(url=url)
+    <span class="kw">return</span> <span class="fn">IndexResponse</span>(indexed=count, source=url)</code></pre>
+      <div class="voice">
+        Step A is in <code>main.py</code>: <code>index_documents</code> now takes an optional <code>url</code> argument. If it's <code>None</code>, we fall back to <code>SOURCE_URL</code>. It also returns the number of chunks so the route can report it. Step B is in <code>server.py</code>: the route accepts an optional <code>IndexRequest</code> body. If the body is missing or <code>url</code> is <code>None</code>, we use <code>SOURCE_URL</code>. FastAPI treats the parameter as optional because it has a default of <code>None</code>, so a request with no body still works.
+      </div>
+      <div class="notes">
+        <h4>Why <code>HttpUrl</code> and not <code>str</code>?</h4>
+        <ul>
+          <li>Pydantic validates the scheme (<code>http</code> or <code>https</code>) and the host.</li>
+          <li>Invalid URLs are rejected with a 422 before they reach <code>load_data</code>.</li>
+          <li>The generated docs show the field as a URL input, not a free-form string.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="chapter" id="l4-test">
+      <h3><span class="num">3.</span> Test both cases <span class="time-badge">6:00–8:00</span></h3>
+      <div class="screen">
+        <p>Case 1: no body — index the default <code>SOURCE_URL</code>.</p>
+      </div>
+<pre><code>curl -X POST http://127.0.0.1:8000/index
+<span class="cm"># {"indexed": 42, "source": "https://aismartcode.vercel.app/"}</span></code></pre>
+      <div class="screen">
+        <p>Case 2: custom URL — index a different page.</p>
+      </div>
+<pre><code>curl -X POST http://127.0.0.1:8000/index \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -d <span class="str">'{"url": "https://example.com"}'</span>
+<span class="cm"># {"indexed": 17, "source": "https://example.com/"}</span></code></pre>
+      <div class="screen">
+        <p>Case 3: invalid URL — Pydantic rejects it.</p>
+      </div>
+<pre><code>curl -X POST http://127.0.0.1:8000/index \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -d <span class="str">'{"url": "not-a-url"}'</span>
+<span class="cm"># 422 Unprocessable Entity
+# {"detail":[{"type":"url_parsing","loc":["body","url"], ...}]}</span></code></pre>
+      <div class="voice">
+        Three cases, three behaviors. No body — the route falls back to <code>SOURCE_URL</code>. Custom URL — the route indexes that page and reports the normalized URL in the response. Invalid URL — Pydantic rejects it before any indexing happens, with a clear 422. This is exactly the kind of small, safe extension Pydantic is designed for: you add a field, and validation and docs come for free.
+      </div>
+    </section>
+
+    <section class="chapter" id="l4-summary">
+      <h3><span class="num">4.</span> Summary and homework <span class="time-badge">8:00–9:00</span></h3>
+      <ul class="checklist">
+        <li><code>IndexRequest</code> with optional <code>HttpUrl</code> field</li>
+        <li><code>index_documents(url: str | None = None)</code> returns the chunk count</li>
+        <li><code>/index</code> accepts an optional body and falls back to <code>SOURCE_URL</code></li>
+        <li>invalid URLs are rejected with a 422 before indexing</li>
+      </ul>
+      <div class="voice">
+        Homework: add a query parameter <code>replace</code> that, when set to <code>true</code>, deletes existing chunks for the same source before indexing. That way re-indexing a page doesn't leave stale chunks behind. This is a small change but it makes the route production-safe.
+      </div>
+
+      <div class="advanced-teaser" id="adv-teaser">
+        <h4>Next: SSE streaming (advanced course)</h4>
+        <p><strong>What we'll add:</strong> a <code>/stream</code> endpoint that sends tokens to the browser as they are generated, using the Server-Sent Events protocol.</p>
+        <p><strong>Why it's a separate lesson:</strong> SSE is not just "another route" — it's a different transport. It needs the <code>text/event-stream</code> content type, a specific <code>data: ...\n\n</code> frame format, buffering headers, and a client-side <code>EventSource</code>. Mixing it into the FastAPI wrapper lesson would hide all of that behind a wall of code.</p>
+        <p><strong>Prerequisites:</strong> the FastAPI wrapper from lesson 3, the <code>astream</code> wrapper from lesson 2, and a running Ollama instance.</p>
+      </div>
+    </section>
+
+    <!-- ==================== ADVANCED: SSE ==================== -->
+    <div class="lesson-header advanced" id="adv-intro">
+      <span class="lesson-num">Advanced lesson</span>
+      <h2>SSE streaming: pushing tokens to the browser <span class="advanced-badge">Advanced</span></h2>
+      <p class="goal"><strong>Goal:</strong> add a <code>/stream</code> endpoint that sends tokens to the browser as they are generated, using the Server-Sent Events protocol. Understand what SSE is, why it fits LLM streaming, and how to test it with curl and a minimal <code>EventSource</code> client.</p>
+    </div>
+
+    <section class="chapter">
+      <h3><span class="num">0.</span> Lesson intro <span class="time-badge">0:00–1:00</span></h3>
+      <div class="screen">
+        <p>Slide: on the left — the <code>/ask</code> endpoint returning one big JSON, on the right — a browser receiving tokens one by one. An arrow between them: "same data, different transport".</p>
+      </div>
+      <div class="voice">
+        In lesson 3 we built <code>/ask</code> — it returns the full answer as one JSON. That works, but the user still waits for the whole generation before seeing anything. In lesson 2 we already had a token stream in the terminal. Now let's expose it over HTTP so a browser can consume it. That's what SSE is for: Server-Sent Events, a protocol that lets a server push data to a client over a single HTTP connection.
+      </div>
+    </section>
+
+    <section class="chapter" id="adv-sse">
+      <h3><span class="num">1.</span> What is SSE <span class="time-badge">1:00–3:30</span></h3>
+      <div class="screen">
+        <p>Slide: a diagram — "client → HTTP request → server → one-way event stream → client".</p>
+      </div>
+      <div class="voice">
+        SSE is a mechanism that lets a server push data to a client over a single HTTP connection. Unlike WebSocket, where both directions are open, SSE is one-way: the server sends, the client only reads. That's exactly what LLM streaming needs: the user sent a question, the server is generating the answer and sending tokens as they become available. At that moment the client has nothing to send back.
+      </div>
+      <div class="screen">
+        <p>Show what an SSE stream looks like in the browser DevTools: lines like <code>data: {"token": "The"}</code>, <code>data: {"token": " promo"}</code>, and so on.</p>
+      </div>
+      <div class="voice">
+        Technically SSE is a regular HTTP response with the <code>Content-Type: text/event-stream</code> header. The server doesn't close the connection; instead it gradually writes lines in a special format: <code>data: ...</code> followed by two newlines at the end of each message. The browser's <code>EventSource</code> reads this stream and fires a handler for each message. If the connection drops, the browser automatically reconnects after a few seconds.
+      </div>
+    </section>
+
+    <section class="chapter" id="adv-why">
+      <h3><span class="num">2.</span> Why SSE, not WebSocket <span class="time-badge">3:30–5:30</span></h3>
+      <div class="screen">
+        <p>A comparison slide of the three transports.</p>
+      </div>
+      <table>
+        <thead>
+          <tr><th></th><th>JSON <code>/ask</code> (lesson 3)</th><th>SSE</th><th>WebSocket</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Transport</td><td>HTTP request/response</td><td>HTTP streaming</td><td>separate protocol</td></tr>
+          <tr><td>Client</td><td>fetch / curl</td><td>browser / <code>EventSource</code></td><td>browser / <code>WebSocket</code></td></tr>
+          <tr><td>Direction</td><td>one request, one response</td><td>server → client</td><td>both ways</td></tr>
+          <tr><td>Time to first token</td><td>after full generation</td><td>immediate</td><td>immediate</td></tr>
+          <tr><td>Complexity</td><td>minimal</td><td>medium</td><td>high</td></tr>
+        </tbody>
+      </table>
+      <div class="voice">
+        Why not WebSocket? Because WebSocket is needed when both sides send data over the same connection — for example, a voice chat where the microphone and the speaker work simultaneously. For text chat with an LLM, the client sent a question and is waiting. There's nothing to send back. SSE is a standard, simple, and sufficient tool. It works over regular HTTP, doesn't require a separate protocol, and is supported by every browser through <code>EventSource</code>. And why not just keep <code>/ask</code> as JSON? Because the user waits for the full generation. SSE gives the first token almost immediately, which is the whole point of streaming.
+      </div>
+    </section>
+
+    <section class="chapter" id="adv-server">
+      <h3><span class="num">3.</span> Add the <code>/stream</code> endpoint <span class="time-badge">5:30–9:00</span></h3>
+      <div class="screen">
+        <p>Open <code>server.py</code>. Add a new route <code>/stream</code> next to <code>/ask</code>. Import <code>StreamingResponse</code> and <code>json</code>.</p>
+      </div>
+<pre><code><span class="cm"># server.py — add these imports at the top</span>
+<span class="kw">import</span> json
+<span class="kw">from</span> fastapi.responses <span class="kw">import</span> StreamingResponse</code></pre>
+      <div class="screen">
+        <p>Then add the route below <code>/ask</code>:</p>
+      </div>
+<pre><code><span class="var">@app</span>.<span class="fn">get</span>(<span class="str">"/stream"</span>)
+<span class="kw">async def</span> <span class="fn">stream</span>(question: <span class="var">str</span>):
+    <span class="kw">async def</span> <span class="fn">event_generator</span>():
+        <span class="kw">async for</span> message_chunk, metadata <span class="kw">in</span> rag_graph.<span class="fn">astream</span>(
+            {<span class="str">"question"</span>: question, <span class="str">"context"</span>: <span class="str">""</span>, <span class="str">"sources"</span>: [], <span class="str">"answer"</span>: <span class="str">""</span>},
+            stream_mode=<span class="str">"messages"</span>,
+        ):
+            <span class="kw">if</span> (
+                message_chunk.content
+                <span class="kw">and</span> metadata.<span class="fn">get</span>(<span class="str">"langgraph_node"</span>) == <span class="str">"generate"</span>
+            ):
+                payload = json.<span class="fn">dumps</span>({<span class="str">"token"</span>: message_chunk.content})
+                <span class="kw">yield</span> <span class="str">f"data: {payload}\n\n"</span>
+        <span class="kw">yield</span> <span class="str">"data: [DONE]\n\n"</span>
+
+    <span class="kw">return</span> <span class="fn">StreamingResponse</span>(
+        <span class="fn">event_generator</span>(),
+        media_type=<span class="str">"text/event-stream"</span>,
+        headers={
+            <span class="str">"Cache-Control"</span>: <span class="str">"no-cache"</span>,
+            <span class="str">"X-Accel-Buffering"</span>: <span class="str">"no"</span>,  <span class="cm"># disable nginx buffering</span>
+        },
+    )</code></pre>
+      <div class="voice">
+        Watch the shape. The body of <code>event_generator</code> is almost a copy of our <code>ask_question_stream</code> from lesson 2 — same <code>astream</code>, same <code>stream_mode="messages"</code>, same <code>langgraph_node == "generate"</code> filter. The difference is that instead of <code>print</code> we <code>yield</code> a string in SSE format. Each token is packed into <code>data: {"token": "..."}\n\n</code> — the two newlines are mandatory, they're the frame separator. At the end we send <code>data: [DONE]\n\n</code> so the client knows the stream is over. The <code>X-Accel-Buffering: no</code> header is needed if nginx sits in front of FastAPI: without it nginx buffers tokens and delivers them in batches instead of one by one.
+      </div>
+      <div class="notes">
+        <h4>Why <code>GET</code> and a query parameter?</h4>
+        <ul>
+          <li><code>EventSource</code> only supports <code>GET</code> — no request body.</li>
+          <li>So the question travels as a query parameter: <code>/stream?question=...</code>.</li>
+          <li>If you need a body, use <code>fetch</code> with a streaming reader instead of <code>EventSource</code>.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="chapter" id="adv-test">
+      <h3><span class="num">4.</span> Test with curl <span class="time-badge">9:00–11:00</span></h3>
+      <div class="screen">
+        <p>Make sure the server is running: <code>uvicorn server:app --reload</code>. In another terminal:</p>
+      </div>
+<pre><code>curl -N <span class="str">"http://127.0.0.1:8000/stream?question=What%20is%20the%20promo%20code"</span></code></pre>
+      <div class="screen">
+        <p>On screen — a stream of lines appearing one by one:</p>
+      </div>
+<pre><code>data: {<span class="str">"token"</span>: <span class="str">"The"</span>}
+
+data: {<span class="str">"token"</span>: <span class="str">" promo"</span>}
+
+data: {<span class="str">"token"</span>: <span class="str">" code"</span>}
+
+data: {<span class="str">"token"</span>: <span class="str">" is"</span>}
+
+data: [DONE]</code></pre>
+      <div class="voice">
+        The <code>-N</code> flag in curl disables buffering so we see tokens as they arrive. Note the format: each line starts with <code>data:</code> and ends with an empty line. That's the SSE frame. Compare with <code>/ask</code> from lesson 3: same data, but now it arrives piece by piece instead of all at once. That's the whole point of this lesson.
+      </div>
+    </section>
+
+    <section class="chapter" id="adv-client">
+      <h3><span class="num">5.</span> Minimal <code>EventSource</code> client <span class="time-badge">11:00–14:00</span></h3>
+      <div class="screen">
+        <p>Show a minimal HTML file with <code>EventSource</code>. You don't have to type it — just show and explain.</p>
+      </div>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;body&gt;
+  &lt;div id=<span class="str">"answer"</span>&gt;&lt;/div&gt;
+  &lt;script&gt;
+    <span class="kw">const</span> q = <span class="fn">encodeURIComponent</span>(<span class="str">"What is the promo code?"</span>);
+    <span class="kw">const</span> source = <span class="kw">new</span> <span class="fn">EventSource</span>(<span class="str">`http://127.0.0.1:8000/stream?question=${q}`</span>);
+
+    source.<span class="fn">onmessage</span> = (event) =&gt; {
+      <span class="kw">if</span> (event.data === <span class="str">"[DONE]"</span>) {
+        source.<span class="fn">close</span>();
+        <span class="kw">return</span>;
+      }
+      <span class="kw">const</span> data = JSON.<span class="fn">parse</span>(event.data);
+      document.<span class="fn">getElementById</span>(<span class="str">"answer"</span>).textContent += data.token;
+    };
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+      <div class="voice">
+        The client creates an <code>EventSource</code> and points it at the endpoint URL. Every message triggers <code>onmessage</code>. We check whether it's <code>[DONE]</code>, parse the JSON, and append the token to <code>textContent</code>. That's it. The browser keeps the connection open and reconnects on its own if something drops. That's the main advantage of SSE: minimal client code, no libraries. Open this file in a browser with the server running and you'll see tokens appear in the page as they're generated.
+      </div>
+    </section>
+
+    <section class="chapter" id="adv-summary">
+      <h3><span class="num">6.</span> Summary and homework <span class="time-badge">14:00–15:00</span></h3>
+      <ul class="checklist">
+        <li><code>StreamingResponse</code> with <code>media_type="text/event-stream"</code></li>
+        <li>SSE format: <code>data: {...}\n\n</code>, two newlines at the end</li>
+        <li><code>X-Accel-Buffering: no</code> header to disable nginx buffering</li>
+        <li><code>GET /stream?question=...</code> because <code>EventSource</code> doesn't support request bodies</li>
+        <li>an <code>EventSource</code> client reads the stream and updates the DOM</li>
+        <li>we understand why SSE and not WebSocket: LLM streaming needs only a one-way channel</li>
+      </ul>
+      <div class="voice">
+        Advanced lesson takeaway: we took the console stream from lesson 2, the FastAPI wrapper from lesson 3, and combined them into a <code>/stream</code> endpoint that pushes tokens to the browser via SSE. The <code>/ask</code> endpoint stays for cases where you don't need streaming. Homework: add error handling and a "Stop" button to the client that calls <code>source.close()</code>. Then add an SSE variant of <code>/ask</code> that also sends <code>sources</code> at the end — you can get them from a parallel <code>stream_mode="updates"</code> subscription, as we discussed in lesson 2.
+      </div>
+    </section>
+
+    <!-- ==================== NOTES ==================== -->
+    <div class="notes" id="notes" style="margin-top: 60px; scroll-margin-top: 20px;">
+      <h4>Production notes</h4>
+      <ul>
+        <li><strong>Screen recording:</strong> terminal with a large font (16–18pt), dark theme so tokens are visible.</li>
+        <li><strong>Lesson 3:</strong> be sure to open <code>/docs</code> in the browser — it's the most impressive part of the FastAPI + Pydantic combo.</li>
+        <li><strong>Lesson 4:</strong> show all three curl cases side by side — no body, custom URL, invalid URL.</li>
+        <li><strong>Advanced lesson:</strong> show the DevTools Network → EventStream tab so the viewer sees SSE frames live.</li>
+        <li><strong>Code:</strong> type the routes live, paste the schemas and imports.</li>
+        <li><strong>Subtitles:</strong> mandatory for the terminal and code.</li>
+        <li><strong>Lesson files:</strong> <code>main.py</code>, <code>inspect_stream.py</code>, <code>schemas.py</code>, <code>server.py</code>, <code>client.html</code>.</li>
+        <li><strong>Transitions:</strong> at the end of lesson 2, tease lesson 3. At the end of lesson 3, tease lesson 4. At the end of lesson 4, tease the advanced SSE lesson.</li>
+      </ul>
+    </div>
+
+    <footer>
+      Section script "Streaming in LangGraph" · 4 lessons + advanced SSE · ~55 minutes
+    </footer>
+  </main>
+</div>
+</body>
+</html>

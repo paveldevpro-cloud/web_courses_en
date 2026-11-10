@@ -1,0 +1,265 @@
+{
+  "tool": "comp-spec",
+  "version": 1,
+  "createdAt": "2026-11-10T09:55:20.243Z",
+  "comp": ".impeccable/mocks/home-keynote.png",
+  "warnings": [],
+  "uncoveredInkCells": [
+    "I3",
+    "J3",
+    "I4",
+    "J4",
+    "I5",
+    "J5",
+    "J6"
+  ],
+  "compSize": {
+    "width": 1360,
+    "height": 1792
+  },
+  "aspect": 0.7589,
+  "orientation": "portrait",
+  "palette": [
+    {
+      "hex": "#f8f8f8",
+      "coverage": 0.9815
+    },
+    {
+      "hex": "#181818",
+      "coverage": 0.0099
+    },
+    {
+      "hex": "#2868c8",
+      "coverage": 0.0068
+    },
+    {
+      "hex": "#686878",
+      "coverage": 0.0018
+    }
+  ],
+  "bands": [
+    {
+      "y": 0.3077,
+      "strength": 0.2788
+    },
+    {
+      "y": 0.3491,
+      "strength": 0.5575
+    }
+  ],
+  "regions": [
+    {
+      "id": "title",
+      "kind": "text",
+      "note": "Centered display title Build a local RAG system",
+      "grid": "B2:H4",
+      "box": {
+        "x": 0.1,
+        "y": 0.2,
+        "w": 0.7,
+        "h": 0.3
+      },
+      "px": {
+        "x": 136,
+        "y": 358,
+        "w": 952,
+        "h": 538
+      },
+      "aspect": 1.7695,
+      "palette": [
+        {
+          "hex": "#f8f8f8",
+          "coverage": 0.9821
+        },
+        {
+          "hex": "#181818",
+          "coverage": 0.014
+        },
+        {
+          "hex": "#2868c8",
+          "coverage": 0.0039
+        }
+      ],
+      "detail": {
+        "energy": 4.3981
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null,
+      "surface": {
+        "flat": true,
+        "rules": false
+      },
+      "type": {
+        "comp": null,
+        "measuredAt": "2026-11-10T09:55:23.871Z",
+        "note": "no separable lettering in the crop; size by the region box"
+      }
+    },
+    {
+      "id": "stack",
+      "kind": "text",
+      "note": "Blue stack line LangChain LangGraph Chroma Ollama",
+      "grid": "C4:G5",
+      "coverBox": {
+        "x": 0.2,
+        "y": 0.4,
+        "w": 0.5,
+        "h": 0.2
+      },
+      "box": {
+        "x": 0.6919,
+        "y": 0.4721,
+        "w": 0.0081,
+        "h": 0.0318
+      },
+      "px": {
+        "x": 941,
+        "y": 846,
+        "w": 11,
+        "h": 57
+      },
+      "aspect": 0.193,
+      "palette": [
+        {
+          "hex": "#f8f8f8",
+          "coverage": 0.8289
+        },
+        {
+          "hex": "#6898d8",
+          "coverage": 0.1711
+        }
+      ],
+      "detail": {
+        "energy": 0.9681
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null,
+      "surface": {
+        "flat": false,
+        "rules": true
+      },
+      "type": {
+        "comp": null,
+        "measuredAt": "2026-11-10T09:55:23.799Z",
+        "note": "no separable lettering in the crop; size by the region box"
+      }
+    },
+    {
+      "id": "lead",
+      "kind": "text",
+      "note": "Mute supporting sentence about spoken-video script",
+      "grid": "C5:G6",
+      "box": {
+        "x": 0.2,
+        "y": 0.5,
+        "w": 0.5,
+        "h": 0.2
+      },
+      "px": {
+        "x": 272,
+        "y": 896,
+        "w": 680,
+        "h": 358
+      },
+      "aspect": 1.8994,
+      "palette": [
+        {
+          "hex": "#f8f8f8",
+          "coverage": 1
+        }
+      ],
+      "detail": {
+        "energy": 0
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null,
+      "surface": {
+        "flat": true,
+        "rules": false
+      },
+      "type": {
+        "comp": null,
+        "measuredAt": "2026-11-10T09:55:23.732Z",
+        "note": "no separable lettering in the crop; size by the region box"
+      }
+    },
+    {
+      "id": "cta",
+      "kind": "control",
+      "note": "Primary pill CTA Start with LLM Agent",
+      "grid": "D6:F7",
+      "box": {
+        "x": 0.3,
+        "y": 0.6,
+        "w": 0.3,
+        "h": 0.2
+      },
+      "px": {
+        "x": 408,
+        "y": 1075,
+        "w": 408,
+        "h": 358
+      },
+      "aspect": 1.1397,
+      "palette": [
+        {
+          "hex": "#f8f8f8",
+          "coverage": 1
+        }
+      ],
+      "detail": {
+        "energy": 0
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null,
+      "surface": {
+        "flat": true,
+        "rules": false
+      }
+    },
+    {
+      "id": "path",
+      "kind": "control",
+      "note": "Secondary module path Streams CLI FastAPI SSE",
+      "grid": "C8:G9",
+      "box": {
+        "x": 0.2,
+        "y": 0.8,
+        "w": 0.5,
+        "h": 0.2
+      },
+      "px": {
+        "x": 272,
+        "y": 1434,
+        "w": 680,
+        "h": 358
+      },
+      "aspect": 1.8994,
+      "palette": [
+        {
+          "hex": "#f8f8f8",
+          "coverage": 1
+        }
+      ],
+      "detail": {
+        "energy": 0
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null,
+      "surface": {
+        "flat": true,
+        "rules": false
+      }
+    }
+  ],
+  "compSha256": "b35f753c9fcdcb34c1c49bf5a90019b7c9d4fcb74cb5c8755e72246983808871",
+  "regionsSource": {
+    "path": ".impeccable/build/regions.json",
+    "sha256": "07cdeef136dd3ef9ebe2c243e0ebaf1f5b43c831076439fbc69c3f511c219898"
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-09T18:15:00Z",
+  "title": "Design System: HTML Web Courses EN",
+  "extensions": {
+    "colorMeta": {
+      "bg": { "role": "neutral", "displayName": "Paper" },
+      "bg-soft": { "role": "neutral", "displayName": "Soft Gray" },
+      "text": { "role": "neutral", "displayName": "Ink" },
+      "muted": { "role": "neutral", "displayName": "Secondary" },
+      "border": { "role": "neutral", "displayName": "Hairline" },
+      "accent": { "role": "primary", "displayName": "Support Blue" },
+      "code-bg": { "role": "neutral", "displayName": "Code Well" },
+      "code-text": { "role": "neutral", "displayName": "Code Ink" }
+    },
+    "typographyMeta": {
+      "body": { "displayName": "Body", "purpose": "Narration and lesson prose." },
+      "display": { "displayName": "Title", "purpose": "Lesson h1 only." },
+      "mono": { "displayName": "Mono", "purpose": "Code, promo codes, labels." }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "promo-enter",
+        "value": "0.55s cubic-bezier(0.22, 1, 0.36, 1)",
+        "purpose": "Single soft promo entrance; disabled under prefers-reduced-motion."
+      },
+      {
+        "name": "tab-settle",
+        "value": "0.18s ease",
+        "purpose": "Tab color and underline settle without pulse glow."
+      }
+    ],
+    "breakpoints": [
+      { "name": "toc-sticky", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Course Tab Selected",
+      "kind": "nav",
+      "refersTo": "tab-selected",
+      "description": "Text tab with blue underline.",
+      "html": "<button class=\"ds-tab ds-tab-on\" type=\"button\">LLM Agent</button>",
+      "css": ".ds-tab { font: 400 0.9375rem/1.2 -apple-system, BlinkMacSystemFont, sans-serif; color: #6e6e73; background: transparent; border: 0; border-bottom: 2px solid transparent; padding: 10px 2px 12px; cursor: pointer; } .ds-tab-on { color: #0066cc; font-weight: 600; border-bottom-color: #0066cc; } .ds-tab:focus-visible { outline: 2px solid #0066cc; outline-offset: 4px; }"
+    },
+    {
+      "name": "Copy Button",
+      "kind": "button",
+      "refersTo": "button-copy",
+      "description": "Outline pill for copying code or promo.",
+      "html": "<button class=\"ds-copy\" type=\"button\">Copy</button>",
+      "css": ".ds-copy { font: 500 0.8125rem/1 -apple-system, BlinkMacSystemFont, sans-serif; padding: 8px 16px; border: 1px solid #d2d2d7; border-radius: 980px; background: #fff; color: #1d1d1f; cursor: pointer; } .ds-copy:hover { background: #f5f5f7; } .ds-copy:focus-visible { outline: 2px solid #0066cc; outline-offset: 2px; }"
+    },
+    {
+      "name": "Promo Code Chip",
+      "kind": "chip",
+      "refersTo": "promo-code",
+      "description": "Pill showing the Advanced course code.",
+      "html": "<code class=\"ds-promo-code\">PROMO_CODE_HERE</code>",
+      "css": ".ds-promo-code { font: 600 0.8125rem/1 ui-monospace, Menlo, monospace; padding: 7px 12px; border-radius: 980px; background: #f5f5f7; color: #0066cc; }"
+    },
+    {
+      "name": "Code Well",
+      "kind": "custom",
+      "refersTo": "code-well",
+      "description": "Light bordered pre block for lesson snippets.",
+      "html": "<pre class=\"ds-pre\"><code>llm = ChatOpenAI(streaming=True)</code></pre>",
+      "css": ".ds-pre { margin: 0; background: #f5f5f7; color: #1d1d1f; border: 1px solid #d2d2d7; border-radius: 12px; padding: 16px; font: 0.8125rem/1.5 ui-monospace, Menlo, monospace; overflow-x: auto; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Apple Support–quiet course script",
+    "overview": "Course teaching script restyled as an Apple Support–quiet document: white paper, system SF stack, blue text wayfinding, hairline rules. Content order and curriculum stay fixed; only chrome and type change.",
+    "keyCharacteristics": [
+      "Hairline promo and underline tabs",
+      "System SF typography at 17px",
+      "Light code wells",
+      "No thick accent side-bars on narration"
+    ],
+    "rules": [
+      {
+        "name": "Content Freeze",
+        "body": "Do not change lesson copy, code samples, or tab order when extending the system.",
+        "section": "layout"
+      },
+      {
+        "name": "Quiet Motion",
+        "body": "One soft promo entrance; no continuous pulse glow.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep English chrome, unique section ids, and PROMO_CODE_HERE aligned with Block 15.",
+      "Do respect prefers-reduced-motion."
+    ],
+    "donts": [
+      "Don't reintroduce orange promotional AI chrome or thick accent side bars on narration.",
+      "Don't change lesson copy, code samples, or tab order when extending the system."
+    ]
+  }
+}

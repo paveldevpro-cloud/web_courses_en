@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+      }
+      body {
+        width: 1440px;
+        height: 900px;
+        overflow: hidden;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #fff;
+        color: #1d1d1f;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 48px;
+      }
+      .eyebrow-bar {
+        height: 8px;
+        width: 120px;
+        background: #f5f5f7;
+        border-radius: 8px;
+        margin-bottom: 28px;
+      }
+      h1 {
+        font-size: 72px;
+        font-weight: 600;
+        letter-spacing: -0.03em;
+        line-height: 1.05;
+        max-width: 14ch;
+      }
+      .stack {
+        margin-top: 22px;
+        font-size: 28px;
+        color: #0066cc;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        height: 36px;
+      }
+      .lead {
+        margin-top: 28px;
+        max-width: 36ch;
+        font-size: 21px;
+        line-height: 1.35;
+        color: #6e6e73;
+      }
+      .cta {
+        margin-top: 36px;
+        display: inline-block;
+        background: #0066cc;
+        color: #fff;
+        padding: 14px 28px;
+        border-radius: 980px;
+        font-size: 17px;
+        font-weight: 500;
+      }
+      .path {
+        margin-top: 48px;
+        display: flex;
+        gap: 28px;
+        color: #6e6e73;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="eyebrow-bar"></div>
+    <h1>Build a local RAG system</h1>
+    <div class="stack">LangChain · LangGraph · Chroma · Ollama</div>
+    <p class="lead">
+      A spoken-video script: follow narration, jump sections, copy working code.
+    </p>
+    <a class="cta">Start with LLM Agent</a>
+    <div class="path">
+      <span>Streams</span><span>CLI</span><span>FastAPI</span><span>SSE</span>
+    </div>
+  </body>
+</html>

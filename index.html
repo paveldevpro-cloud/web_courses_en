@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="utf-8" />
     <meta
@@ -12,41 +12,70 @@
         box-sizing: border-box;
         padding-top: env(safe-area-inset-top, 0px);
         padding-bottom: env(safe-area-inset-bottom, 0px);
-        --bg: #fafaf8;
-        --tx: #1f2328;
-        --mut: #6a737d;
-        --card: #fff;
-        --bd: #e3e3df;
-        --ac: #c2410c;
-        --code: #16181d;
-        --codetx: #e6e6e6;
-        --say: #fff7ed;
+        --bg: #ffffff;
+        --bg-soft: #f5f5f7;
+        --tx: #1d1d1f;
+        --mut: #6e6e73;
+        --card: #ffffff;
+        --bd: #d2d2d7;
+        --ac: #eab308;
+        /* Цвет заголовков — меняйте только эту переменную */
+        --heading: #eab308;
+        --link: #0066cc;
+        --code: #f5f5f7;
+        --codetx: #1d1d1f;
+        --say: #f5f5f7;
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.04);
+        --radius: 12px;
+        --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+        --font:
+          -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
       }
       @media (prefers-color-scheme: dark) {
         :root:not([data-theme="light"]) {
-          --bg: #15161a;
-          --tx: #e6e6e6;
-          --mut: #9aa0a6;
-          --card: #1d1f24;
-          --bd: #2d3037;
-          --ac: #fb923c;
-          --code: #0d0e11;
-          --codetx: #e6e6e6;
-          --say: #26211c;
+          --bg: #000000;
+          --bg-soft: #1c1c1e;
+          --tx: #f5f5f7;
+          --mut: #98989d;
+          --card: #1c1c1e;
+          --bd: #38383a;
+          --ac: #eab308;
+          --heading: #facc15;
+          --link: #2997ff;
+          --code: #1c1c1e;
+          --codetx: #f5f5f7;
+          --say: #2c2c2e;
+          --shadow:
+            0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
         }
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: inherit;
       }
       body {
         margin: 0;
         background: var(--bg);
         color: var(--tx);
-        font:
-          16px/1.65 system-ui,
-          -apple-system,
-          "Segoe UI",
-          sans-serif;
+        font: 17px/1.47 var(--font);
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+      ::selection {
+        background: color-mix(in srgb, var(--ac) 28%, transparent);
+        color: var(--tx);
       }
       html {
         scroll-padding-top: calc(12px + env(safe-area-inset-top, 0px));
+        scroll-behavior: smooth;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
       }
       .page {
         display: grid;
@@ -54,23 +83,32 @@
         gap: 0;
         max-width: 1120px;
         margin: 0 auto;
-        padding: 24px 16px 64px;
+        padding: 28px 20px 80px;
       }
       main.content {
-        max-width: 860px;
+        max-width: 740px;
         width: 100%;
         margin: 0 auto;
         min-width: 0;
       }
       h1 {
-        font-size: 1.7rem;
-        margin: 0.2em 0;
+        font-size: clamp(1.5rem, 4.2vw, 2.25rem);
+        font-weight: 600;
+        letter-spacing: -0.022em;
+        line-height: 1.15;
+        margin: 0.35em 0 0.25em;
+        color: var(--heading);
+        overflow-wrap: anywhere;
       }
       .lead {
         color: var(--mut);
+        font-size: 1.125rem;
+        line-height: 1.4;
+        max-width: 62ch;
+        margin: 0 0 1.5rem;
       }
       .toc {
-        margin: 0 0 16px;
+        margin: 0 0 20px;
       }
       .toc-bar {
         display: flex;
@@ -80,11 +118,12 @@
       }
       .toc-bar button {
         font: inherit;
-        font-size: 0.9rem;
+        font-size: 0.875rem;
+        font-weight: 500;
         padding: 8px 14px;
         border: 1px solid var(--bd);
-        border-radius: 8px;
-        background: var(--card);
+        border-radius: 980px;
+        background: var(--bg-soft);
         color: var(--tx);
         cursor: pointer;
       }
@@ -92,228 +131,305 @@
         outline: 2px solid var(--ac);
         outline-offset: 2px;
       }
-      #toc-close {
+      .toc-bar button[aria-label="Close contents"],
+      .toc-bar button[id$="-close"] {
         display: none;
       }
-      .toc.is-open #toc-close {
+      .toc.is-open .toc-bar button[aria-label="Close contents"],
+      .toc.is-open .toc-bar button[id$="-close"] {
         display: inline-block;
       }
-      #nav {
+      .toc nav {
         display: none;
         flex-direction: column;
-        gap: 4px;
+        gap: 2px;
         max-height: min(70vh, 520px);
         overflow: auto;
-        padding: 10px;
-        border: 1px solid var(--bd);
-        border-radius: 10px;
-        background: var(--card);
+        padding: 8px 0;
+        border-top: 1px solid var(--bd);
+        border-bottom: 1px solid var(--bd);
+        background: transparent;
       }
-      .toc.is-open #nav {
+      .toc.is-open nav {
         display: flex;
       }
-      #nav a {
+      .toc nav a {
         display: block;
-        padding: 6px 10px;
-        border-radius: 6px;
+        padding: 8px 4px 8px 10px;
+        border-radius: 0;
         text-decoration: none;
+        color: var(--mut);
+        font-size: 0.8125rem;
+        border: 0;
+        border-left: 2px solid transparent;
+        line-height: 1.35;
+      }
+      .toc nav a .toc-label {
+        display: block;
+        font-weight: 600;
+        color: inherit;
+      }
+      .toc nav a .toc-desc {
+        display: block;
+        margin-top: 2px;
+        font-weight: 400;
+        font-size: 0.75rem;
+        color: var(--mut);
+        overflow-wrap: anywhere;
+      }
+      .toc nav a:hover {
         color: var(--tx);
-        font-size: 0.85rem;
-        border: 1px solid transparent;
+        background: transparent;
       }
-      #nav a:hover {
-        background: var(--say);
+      .toc nav a:hover .toc-desc {
+        color: var(--tx);
       }
-      #nav a:focus-visible {
+      .toc nav a:focus-visible {
         outline: 2px solid var(--ac);
         outline-offset: 1px;
       }
-      #nav a[aria-current="location"] {
-        background: var(--say);
-        border-color: var(--ac);
+      .toc nav a[aria-current="location"] {
+        background: transparent;
+        border-left-color: var(--ac);
         color: var(--ac);
         font-weight: 600;
       }
+      .toc nav a[aria-current="location"] .toc-desc {
+        color: color-mix(in srgb, var(--ac) 75%, var(--mut));
+        font-weight: 400;
+      }
       @media (min-width: 1024px) {
         .page {
-          grid-template-columns: 240px minmax(0, 860px);
-          gap: 28px;
+          grid-template-columns: 260px minmax(0, 740px);
+          gap: 40px;
           align-items: start;
+          justify-content: center;
         }
         .toc {
           position: sticky;
-          top: calc(12px + env(safe-area-inset-top, 0px));
-          max-height: calc(100vh - 24px);
+          top: calc(16px + env(safe-area-inset-top, 0px));
+          max-height: calc(100vh - 32px);
           margin: 0;
           overflow: auto;
         }
         .toc-bar {
           display: none;
         }
-        #nav {
+        .toc nav {
           display: flex;
           max-height: none;
+          border: 0;
+          border-top: 0;
+          border-bottom: 0;
+          background: transparent;
+          padding: 0;
         }
         main.content {
           margin: 0;
         }
       }
       section {
-        background: var(--card);
-        border: 1px solid var(--bd);
-        border-radius: 12px;
-        padding: 8px 20px 20px;
-        margin: 24px 0;
+        background: transparent;
+        border: 0;
+        border-radius: 0;
+        padding: 0;
+        margin: 2.25rem 0;
       }
       h2 {
-        font-size: 1.25rem;
-        color: var(--ac);
-        margin: 0.8em 0 0.3em;
+        font-size: 1.375rem;
+        font-weight: 600;
+        letter-spacing: -0.015em;
+        color: var(--heading);
+        margin: 1.6em 0 0.55em;
       }
       h3.step {
         font-size: 1.05rem;
-        font-weight: 700;
-        color: var(--tx);
-        margin: 1.4em 0 0.55em;
-        padding: 8px 12px;
-        background: var(--say);
-        border-left: 4px solid var(--ac);
-        border-radius: 6px;
+        font-weight: 600;
+        color: var(--heading);
+        margin: 1.5em 0 0.6em;
+        padding: 0;
+        background: transparent;
+        border: 0;
+        border-radius: 0;
       }
       .say {
-        background: var(--say);
-        border-left: 4px solid var(--ac);
-        border-radius: 6px;
-        padding: 4px 16px;
-        margin: 12px 0;
+        background: transparent;
+        border: 0;
+        border-radius: 0;
+        padding: 0;
+        margin: 0.9rem 0 1.15rem;
+        max-width: 42rem;
       }
       .say b.t {
         display: block;
-        font-size: 0.75rem;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: var(--ac);
-        margin-top: 8px;
+        font-size: 0.8125rem;
+        letter-spacing: 0;
+        text-transform: none;
+        color: var(--mut);
+        margin: 0 0 0.35rem;
+        font-weight: 600;
+      }
+      .say p {
+        margin: 0 0 0.75rem;
+        max-width: 68ch;
+      }
+      .say p:last-child {
+        margin-bottom: 0;
       }
       .say ul {
-        padding-left: 18px;
+        padding-left: 1.15em;
         margin: 6px 0 10px;
       }
       .say li {
         margin: 4px 0;
       }
       code {
-        font-family: ui-monospace, Menlo, Consolas, monospace;
+        font-family: var(--mono);
         font-size: 0.88em;
       }
       .say code {
-        background: rgba(127, 127, 127, 0.15);
-        padding: 1px 5px;
-        border-radius: 4px;
+        background: color-mix(in srgb, var(--tx) 8%, transparent);
+        padding: 1px 6px;
+        border-radius: 6px;
       }
       .cb {
         position: relative;
-        margin: 12px 0;
+        margin: 14px 0;
       }
       .cb .lang {
         position: absolute;
-        left: 12px;
-        top: 6px;
-        font-size: 0.7rem;
-        color: #9aa0a6;
+        left: 14px;
+        top: 10px;
+        font-size: 0.6875rem;
+        font-weight: 500;
+        color: var(--mut);
+        font-family: var(--mono);
       }
       .cb button {
         position: absolute;
-        right: 8px;
-        top: 6px;
-        background: #2d3037;
-        color: #e6e6e6;
-        border: 0;
-        border-radius: 6px;
-        padding: 4px 10px;
+        right: 10px;
+        top: 8px;
+        background: var(--card);
+        color: var(--ac);
+        border: 1px solid var(--bd);
+        border-radius: 980px;
+        padding: 5px 12px;
         font-size: 0.75rem;
+        font-weight: 600;
+        font-family: var(--font);
         cursor: pointer;
       }
       .cb button:hover {
-        background: #3a3e47;
+        background: var(--bg-soft);
+      }
+      .cb button:focus-visible {
+        outline: 2px solid var(--ac);
+        outline-offset: 2px;
       }
       pre {
         margin: 0;
         background: var(--code);
         color: var(--codetx);
-        border-radius: 10px;
-        padding: 34px 14px 14px;
+        border: 1px solid var(--bd);
+        border-radius: var(--radius);
+        padding: 36px 16px 16px;
         overflow-x: auto;
         line-height: 1.5;
       }
       pre code {
-        font-size: 0.85rem;
+        font-size: 0.8125rem;
+        font-family: var(--mono);
+      }
+      .content table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 14px 0 18px;
+        font-size: 0.9375rem;
+      }
+      .content th,
+      .content td {
+        border: 1px solid var(--bd);
+        padding: 10px 12px;
+        text-align: left;
+        vertical-align: top;
+      }
+      .content th {
+        background: var(--bg-soft);
+        font-weight: 600;
       }
       .course-nav {
         max-width: 1120px;
         margin: 0 auto;
-        padding: 16px 16px 0;
+        padding: 8px 20px 0;
       }
       .course-tabs {
         display: flex;
         flex-wrap: wrap;
-        gap: 6px;
-        padding: 6px;
-        border: 1px solid var(--bd);
-        border-radius: 12px;
-        background: var(--card);
+        gap: 4px 18px;
+        padding: 4px 0 14px;
+        border: 0;
+        border-bottom: 1px solid var(--bd);
+        border-radius: 0;
+        background: transparent;
       }
       .course-tabs [role="tab"] {
         font: inherit;
-        font-size: 0.95rem;
-        font-weight: 600;
-        padding: 10px 16px;
-        border: 1px solid transparent;
-        border-radius: 8px;
+        font-size: 0.9375rem;
+        font-weight: 400;
+        padding: 10px 2px 12px;
+        border: 0;
+        border-bottom: 2px solid transparent;
+        border-radius: 0;
         background: transparent;
         color: var(--mut);
         cursor: pointer;
+        margin-bottom: -15px;
+        transition:
+          color 0.18s ease,
+          border-color 0.18s ease;
       }
       .course-tabs [role="tab"]:hover {
         color: var(--tx);
-        background: var(--say);
+        background: transparent;
       }
       .course-tabs [role="tab"][aria-selected="true"] {
         color: var(--ac);
-        background: var(--say);
+        background: transparent;
         border-color: var(--ac);
+        font-weight: 600;
       }
       .course-tabs [role="tab"]:focus-visible {
         outline: 2px solid var(--ac);
-        outline-offset: 2px;
+        outline-offset: 4px;
       }
       .tab-panel[hidden] {
         display: none !important;
       }
       .tab-panel-inner {
-        max-width: 860px;
+        max-width: 740px;
         margin: 0 auto;
-        padding: 24px 16px 64px;
+        padding: 28px 20px 80px;
       }
       .tab-panel-inner section {
-        margin-top: 16px;
+        margin-top: 1.5rem;
       }
       .promo-top {
         max-width: 1120px;
         margin: 0 auto;
-        padding: 16px 16px 0;
+        padding: 20px 20px 0;
       }
       .promo-top-inner {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
         gap: 12px 20px;
-        padding: 14px 18px;
-        border: 2px solid var(--ac);
-        border-radius: 12px;
-        background: var(--say);
+        padding: 14px 0 16px;
+        border: 0;
+        border-bottom: 1px solid var(--bd);
+        border-radius: 0;
+        background: transparent;
         color: var(--tx);
-        box-shadow: 0 0 0 1px color-mix(in srgb, var(--ac) 35%, transparent);
+        box-shadow: none;
       }
       .promo-top-copy {
         flex: 1 1 220px;
@@ -321,14 +437,17 @@
       }
       .promo-top-copy strong {
         display: block;
-        font-size: 1.05rem;
-        color: var(--ac);
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--tx);
         margin-bottom: 4px;
+        letter-spacing: -0.01em;
       }
       .promo-top-copy p {
         margin: 0;
-        font-size: 0.92rem;
-        color: var(--tx);
+        font-size: 0.875rem;
+        color: var(--mut);
+        max-width: 58ch;
       }
       .promo-top-action {
         display: flex;
@@ -337,59 +456,226 @@
         gap: 8px;
       }
       .promo-top-code {
-        font-family: ui-monospace, Menlo, Consolas, monospace;
-        font-size: 0.95rem;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        padding: 6px 10px;
-        border-radius: 8px;
-        border: 1px solid var(--bd);
-        background: var(--card);
+        font-family: var(--mono);
+        font-size: 0.8125rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        padding: 7px 12px;
+        border-radius: 980px;
+        border: 0;
+        background: var(--bg-soft);
         color: var(--ac);
       }
       .promo-top-action button {
         font: inherit;
-        font-size: 0.85rem;
-        padding: 8px 14px;
-        border: 0;
-        border-radius: 8px;
-        background: var(--ac);
-        color: #fff;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        padding: 8px 16px;
+        border: 1px solid var(--bd);
+        border-radius: 980px;
+        background: var(--card);
+        color: var(--tx);
         cursor: pointer;
+      }
+      .promo-top-action button:hover {
+        background: var(--bg-soft);
       }
       .promo-top-action button:focus-visible {
         outline: 2px solid var(--ac);
         outline-offset: 2px;
       }
-      @media (prefers-color-scheme: dark) {
-        :root:not([data-theme="light"]) .promo-top-action button {
-          color: #15161a;
-        }
-      }
       @media (prefers-reduced-motion: no-preference) {
         .promo-top-inner {
-          animation:
-            promo-enter 0.7s ease-out both,
-            promo-pulse 2.4s ease-in-out 0.7s infinite;
+          animation: promo-enter 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
         @keyframes promo-enter {
           from {
             opacity: 0;
-            transform: translateY(-10px);
+            transform: translateY(-6px);
           }
           to {
             opacity: 1;
             transform: translateY(0);
           }
         }
-        @keyframes promo-pulse {
-          0%,
-          100% {
-            box-shadow: 0 0 0 1px color-mix(in srgb, var(--ac) 35%, transparent);
+        .course-tabs [role="tab"][aria-selected="true"] {
+          transition:
+            color 0.18s ease,
+            border-color 0.18s ease;
+        }
+      }
+
+      /* Home · Keynote opener */
+      #panel-home .tab-panel-inner {
+        max-width: none;
+        padding: 0;
+      }
+      .home-hero {
+        min-height: calc(100svh - 160px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 48px 24px 72px;
+        background:
+          radial-gradient(
+            120% 80% at 50% 0%,
+            color-mix(in srgb, var(--bg-soft) 85%, transparent),
+            transparent 62%
+          ),
+          var(--bg);
+      }
+      .home-title {
+        margin: 0;
+        max-width: 14ch;
+        font-size: clamp(2.4rem, 7vw, 4.5rem);
+        font-weight: 600;
+        letter-spacing: -0.035em;
+        line-height: 1.05;
+        color: var(--tx);
+      }
+      .home-stack {
+        position: relative;
+        margin-top: 22px;
+        height: 1.25em;
+        width: min(100%, 28ch);
+        font-size: clamp(1.125rem, 2.4vw, 1.75rem);
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        color: var(--link);
+        overflow: hidden;
+      }
+      .home-stack-word {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+        opacity: 0;
+        transform: translateY(12px);
+        filter: blur(8px);
+        pointer-events: none;
+      }
+      .home-stack-word.is-active {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+      }
+      .home-stack-static {
+        display: none;
+        color: var(--link);
+        font-size: clamp(1.125rem, 2.4vw, 1.75rem);
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        margin-top: 22px;
+      }
+      .home-lead {
+        margin: 28px 0 0;
+        max-width: 36ch;
+        font-size: 1.25rem;
+        line-height: 1.35;
+        color: var(--mut);
+      }
+      .home-cta {
+        margin-top: 36px;
+        font: inherit;
+        font-size: 1.0625rem;
+        font-weight: 500;
+        padding: 14px 28px;
+        border: 0;
+        border-radius: 980px;
+        background: var(--link);
+        color: #fff;
+        cursor: pointer;
+      }
+      .home-cta:hover {
+        filter: brightness(1.06);
+      }
+      .home-cta:focus-visible {
+        outline: 2px solid var(--link);
+        outline-offset: 3px;
+      }
+      .home-path {
+        margin-top: 48px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 28px;
+        justify-content: center;
+        align-items: center;
+      }
+      .home-path button {
+        font: inherit;
+        font-size: 0.875rem;
+        font-weight: 400;
+        padding: 4px 0;
+        border: 0;
+        background: transparent;
+        color: var(--mut);
+        cursor: pointer;
+      }
+      .home-path button:hover {
+        color: var(--tx);
+      }
+      .home-path button:focus-visible {
+        outline: 2px solid var(--link);
+        outline-offset: 3px;
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .home-stack-word {
+          transition:
+            opacity 0.7s var(--ease-out),
+            transform 0.7s var(--ease-out),
+            filter 0.7s var(--ease-out);
+        }
+        .home-hero[data-motion="pending"] .home-title,
+        .home-hero[data-motion="pending"] .home-stack,
+        .home-hero[data-motion="pending"] .home-lead,
+        .home-hero[data-motion="pending"] .home-cta,
+        .home-hero[data-motion="pending"] .home-path {
+          opacity: 0;
+          transform: translateY(22px);
+          filter: blur(12px);
+        }
+        .home-hero[data-motion="play"] .home-title,
+        .home-hero[data-motion="play"] .home-stack,
+        .home-hero[data-motion="play"] .home-lead,
+        .home-hero[data-motion="play"] .home-cta,
+        .home-hero[data-motion="play"] .home-path {
+          animation: home-rise 0.95s var(--ease-out) both;
+        }
+        .home-hero[data-motion="play"] .home-stack {
+          animation-delay: 0.12s;
+        }
+        .home-hero[data-motion="play"] .home-lead {
+          animation-delay: 0.22s;
+        }
+        .home-hero[data-motion="play"] .home-cta {
+          animation-delay: 0.34s;
+        }
+        .home-hero[data-motion="play"] .home-path {
+          animation-delay: 0.46s;
+        }
+        @keyframes home-rise {
+          from {
+            opacity: 0;
+            transform: translateY(22px);
+            filter: blur(12px);
           }
-          50% {
-            box-shadow: 0 0 0 4px color-mix(in srgb, var(--ac) 28%, transparent);
+          to {
+            opacity: 1;
+            transform: translateY(0);
+            filter: blur(0);
           }
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .home-stack {
+          display: none;
+        }
+        .home-stack-static {
+          display: block;
         }
       }
     </style>
@@ -418,6 +704,17 @@
         <button
           type="button"
           role="tab"
+          id="tab-home"
+          aria-controls="panel-home"
+          aria-selected="true"
+          tabindex="0"
+          data-tab="home"
+        >
+          Home
+        </button>
+        <button
+          type="button"
+          role="tab"
           id="tab-basics"
           aria-controls="panel-basics"
           aria-selected="false"
@@ -431,11 +728,22 @@
           role="tab"
           id="tab-agent"
           aria-controls="panel-agent"
-          aria-selected="true"
-          tabindex="0"
+          aria-selected="false"
+          tabindex="-1"
           data-tab="agent"
         >
           LLM Agent
+        </button>
+        <button
+          type="button"
+          role="tab"
+          id="tab-streams"
+          aria-controls="panel-streams"
+          aria-selected="false"
+          tabindex="-1"
+          data-tab="streams"
+        >
+          Streaming: Modes &amp; CLI
         </button>
         <button
           type="button"
@@ -457,10 +765,45 @@
           tabindex="-1"
           data-tab="advanced"
         >
-          Advanced topics
+          Advanced · SSE
         </button>
       </div>
     </nav>
+
+    <div
+      class="tab-panel"
+      id="panel-home"
+      role="tabpanel"
+      aria-labelledby="tab-home"
+    >
+      <div class="tab-panel-inner">
+        <section class="home-hero" aria-label="Course home">
+          <h1 class="home-title">Build a local RAG system</h1>
+          <div class="home-stack" aria-hidden="true">
+            <span class="home-stack-word is-active">LangChain</span>
+            <span class="home-stack-word">LangGraph</span>
+            <span class="home-stack-word">Chroma</span>
+            <span class="home-stack-word">Ollama</span>
+          </div>
+          <p class="home-stack-static">
+            LangChain · LangGraph · Chroma · Ollama
+          </p>
+          <p class="home-lead">
+            A spoken-video script: follow narration, jump sections, copy working
+            code.
+          </p>
+          <button type="button" class="home-cta" data-go-tab="agent">
+            Start with LLM Agent
+          </button>
+          <nav class="home-path" aria-label="Browse modules">
+            <button type="button" data-go-tab="basics">Basics</button>
+            <button type="button" data-go-tab="streams">Streaming</button>
+            <button type="button" data-go-tab="fastapi">FastAPI</button>
+            <button type="button" data-go-tab="advanced">SSE</button>
+          </nav>
+        </section>
+      </div>
+    </div>
 
     <div
       class="tab-panel"
@@ -492,84 +835,87 @@
       id="panel-agent"
       role="tabpanel"
       aria-labelledby="tab-agent"
+      hidden
     >
-    <div class="page">
-      <aside class="toc" id="toc">
-        <div class="toc-bar">
-          <button
-            type="button"
-            id="toc-toggle"
-            aria-expanded="false"
-            aria-controls="nav"
-          >
-            Contents
-          </button>
-          <button type="button" id="toc-close" aria-label="Close contents">
-            Close
-          </button>
-        </div>
-        <nav id="nav" aria-label="Lesson sections"></nav>
-      </aside>
-      <main class="content">
-        <h1>Video script: a RAG system in Python</h1>
-        <p class="lead">
-          LangChain · LangGraph · ChromaDB · Ollama. Read the “Narration” blocks
-          in order — copy code with the button.
-        </p>
-
-        <section id="intro">
-          <div class="say">
-            <b class="t">Narration · Intro and hook</b>
-            <p>
-              <b>Hook.</b> Imagine you ask ChatGPT about your internal documents
-              and it answers confidently. That’s called “hallucination”, because
-              Chat gpt can't access your personal data. Big companies are
-              restricted to give ChatGpt personal information, like your credit
-              card number, social security number, because it is illegal. It's a
-              big problem in the industry and it's not easy to solve.
-            </p>
-            <p>
-              In this course we will build a system that will answer questions
-              from your documents or personal information, honestly says “I
-              don’t know” when the answer isn’t there, and also shows where it
-              got the information. It runs locally on your laptop and it will be
-              free of charge.
-            </p>
-            <p>
-              My name is Pavel, and I’ll be your instructor. We’ll go all the
-              way: load a page from the internet, split it into chunks, turn
-              them into vectors, store them in a database, find the right pieces
-              by meaning, and assemble the answer with LangGraph. If you’re a
-              junior — don’t worry, I’ll explain every line.
-            </p>
-            <p>
-              You’ll need a computer, basic Python knowledge. Let’s get started.
-            </p>
+      <div class="page">
+        <aside class="toc" id="toc">
+          <div class="toc-bar">
+            <button
+              type="button"
+              id="toc-toggle"
+              aria-expanded="false"
+              aria-controls="nav"
+            >
+              Contents
+            </button>
+            <button type="button" id="toc-close" aria-label="Close contents">
+              Close
+            </button>
           </div>
-        </section>
+          <nav id="nav" aria-label="Lesson sections"></nav>
+        </aside>
+        <main class="content">
+          <h1>Video script: a RAG system in Python</h1>
+          <p class="lead">
+            LangChain · LangGraph · ChromaDB · Ollama. Read the “Narration”
+            blocks in order — copy code with the button.
+          </p>
 
-        <section id="block-0">
-          <h2>Block 0. Setup: uv, FastAPI, dependencies</h2>
+          <section id="intro">
+            <div class="say">
+              <b class="t">Narration · Intro and hook</b>
+              <p>
+                <b>Hook.</b> Imagine you ask ChatGPT about your internal
+                documents and it answers confidently. That’s called
+                “hallucination”, because Chat gpt can't access your personal
+                data. Big companies are restricted to give ChatGpt personal
+                information, like your credit card number, social security
+                number, because it is illegal. It's a big problem in the
+                industry and it's not easy to solve.
+              </p>
+              <p>
+                In this course we will build a system that will answer questions
+                from your documents or personal information, honestly says “I
+                don’t know” when the answer isn’t there, and also shows where it
+                got the information. It runs locally on your laptop and it will
+                be free of charge.
+              </p>
+              <p>
+                My name is Pavel, and I’ll be your instructor. We’ll go all the
+                way: load a page from the internet, split it into chunks, turn
+                them into vectors, store them in a database, find the right
+                pieces by meaning, and assemble the answer with LangGraph. If
+                you’re a junior — don’t worry, I’ll explain every line.
+              </p>
+              <p>
+                You’ll need a computer, basic Python knowledge. Let’s get
+                started.
+              </p>
+            </div>
+          </section>
 
-          <h3 class="step">1. Install uv</h3>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              Okay, guys, let's get started. first of all Create main.py file,
-              and copy everything from the plan file and install all necessary
-              dependencies. For this purpose, we gonna use uv package manager.
-              It's a modern and fast package manager for Python. If you don't
-              have it, check the official documentation and install it. using
-              this link:
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">bash</span>
-            <pre><code>https://docs.astral.sh/uv/getting-started/installation/</code></pre>
-          </div>
-          <br />
-          <div class="cb">
-            <pre><code># macOS / Linux
+          <section id="block-0">
+            <h2>Block 0. Setup: uv, FastAPI, dependencies</h2>
+
+            <h3 class="step">1. Install uv</h3>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                Okay, guys, let's get started. first of all Create main.py file,
+                and copy everything from the plan file and install all necessary
+                dependencies. For this purpose, we gonna use uv package manager.
+                It's a modern and fast package manager for Python. If you don't
+                have it, check the official documentation and install it. using
+                this link:
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">bash</span>
+              <pre><code>https://docs.astral.sh/uv/getting-started/installation/</code></pre>
+            </div>
+            <br />
+            <div class="cb">
+              <pre><code># macOS / Linux
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Windows (PowerShell)
@@ -577,137 +923,137 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 
 # check
 uv --version</code></pre>
-          </div>
-          <h3 class="step">2. Initiate the project</h3>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              Now use two commands: uv init to initiate our project and uv
-              python install downloads the Python version you need if you don’t
-              have it. The command <code> uv init </code>creates a new project
-              folder: you’ll get pyproject.toml ,it is kind of the project
-              passport with the dependency list.
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">bash</span>
-            <pre><code>uv init
+            </div>
+            <h3 class="step">2. Initiate the project</h3>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                Now use two commands: uv init to initiate our project and uv
+                python install downloads the Python version you need if you
+                don’t have it. The command <code> uv init </code>creates a new
+                project folder: you’ll get pyproject.toml ,it is kind of the
+                project passport with the dependency list.
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">bash</span>
+              <pre><code>uv init
 uv python install 3.12</code></pre>
-          </div>
-          <h3 class="step">3. Install FastAPI and dependencies</h3>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              Now let's install fast api and all dependensies such as langGraph
-              and langСhain, that we need to build our RAG pipeline and ai
-              agents.
-            </p>
-          </div>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              The <code>uv add</code> command installs a package and immediately
-              writes it to <code>pyproject.toml</code>. First we install
-              FastAPI.
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">bash</span>
-            <pre><code>uv add "fastapi[standard]"</code></pre>
-          </div>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              The second command is everything for RAG. we will disscuss all
-              these packages later”
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">bash</span>
-            <pre><code>uv add langchain-chroma langchain-core langchain-openai \
+            </div>
+            <h3 class="step">3. Install FastAPI and dependencies</h3>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                Now let's install fast api and all dependensies such as
+                langGraph and langСhain, that we need to build our RAG pipeline
+                and ai agents.
+              </p>
+            </div>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                The <code>uv add</code> command installs a package and
+                immediately writes it to <code>pyproject.toml</code>. First we
+                install FastAPI.
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">bash</span>
+              <pre><code>uv add "fastapi[standard]"</code></pre>
+            </div>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                The second command is everything for RAG. we will disscuss all
+                these packages later”
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">bash</span>
+              <pre><code>uv add langchain-chroma langchain-core langchain-openai \
        langchain-text-splitters langgraph \
        requests beautifulsoup4 python-dotenv</code></pre>
-          </div>
-          <h3 class="step">4. Local models (Ollama) and the .env file</h3>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              If you still haven’t installed Ollama, follow the installation
-              guide for your operating system using this link:
-              <a href="https://ollama.com/download/linux" target="_blank"
-                >https://ollama.com/download/linux</a
-              >
-              Ollama is an open-source software platform that lets you download,
-              run, (LLMs) directly on your own computer.
-            </p>
-            <p>
-              Next, use this commands to download two models. The first model
-              <code>llama3.1</code> is the “writer”: it will give us the final
-              answer. The second model: <code>nomic-embed-text</code>
-              is the “translator from meaning into numbers or vectors into our
-              database”. These are two different jobs, that is why we use two
-              different models.
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">bash</span>
-            <pre><code>ollama pull llama3.1
+            </div>
+            <h3 class="step">4. Local models (Ollama) and the .env file</h3>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                If you still haven’t installed Ollama, follow the installation
+                guide for your operating system using this link:
+                <a href="https://ollama.com/download/linux" target="_blank"
+                  >https://ollama.com/download/linux</a
+                >
+                Ollama is an open-source software platform that lets you
+                download, run, (LLMs) directly on your own computer.
+              </p>
+              <p>
+                Next, use this commands to download two models. The first model
+                <code>llama3.1</code> is the “writer”: it will give us the final
+                answer. The second model: <code>nomic-embed-text</code>
+                is the “translator from meaning into numbers or vectors into our
+                database”. These are two different jobs, that is why we use two
+                different models.
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">bash</span>
+              <pre><code>ollama pull llama3.1
 ollama pull nomic-embed-text</code></pre>
-          </div>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>Now let's put this models into the environment variables.</p>
-          </div>
-          <div class="cb">
-            <span class="lang">.env</span>
-            <pre><code>CHAT_MODEL=llama3.1
+            </div>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>Now let's put this models into the environment variables.</p>
+            </div>
+            <div class="cb">
+              <span class="lang">.env</span>
+              <pre><code>CHAT_MODEL=llama3.1
 EMBEDDING_MODEL=nomic-embed-text
 SOURCE_URL=https://aismartcode.vercel.app/
 LLM_API_KEY=ollama
 LLM_API_BASE=http://127.0.0.1:11434/v1</code></pre>
-          </div>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              Create the <code>.env</code> file in the project root. and copy
-              this settings. For the <code>SOURCE_URL</code> I use a page from
-              my web site, and I recommend you to use the same URL to have the
-              same result as mine. Later, you can change it to your own link.
-            </p>
-          </div>
-        </section>
+            </div>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                Create the <code>.env</code> file in the project root. and copy
+                this settings. For the <code>SOURCE_URL</code> I use a page from
+                my web site, and I recommend you to use the same URL to have the
+                same result as mine. Later, you can change it to your own link.
+              </p>
+            </div>
+          </section>
 
-        <section id="block-1">
-          <h2>Block 1. Import Libraries</h2>
+          <section id="block-1">
+            <h2>Block 1. Import Libraries</h2>
 
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              The next step is to import all necessary libraries that we need to
-              build our RAG pipeline and ai agents.
-            </p>
-            <ul>
-              <li>
-                Python standard library for typing, hashing and working with
-                system functions
-              </li>
-              <li>
-                Third-party libraries for HTTP requests, HTML parsing and
-                loading API keys from .env file that we already created.
-              </li>
-              <li>
-                And the last block of libraries is LangChain / LangGraph for
-                building the RAG pipeline and ai agents
-              </li>
-            </ul>
-            <p>
-              Copy all of them, because later we will use everything from this
-              list.
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre><code>#1. Python standard library:
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                The next step is to import all necessary libraries that we need
+                to build our RAG pipeline and ai agents.
+              </p>
+              <ul>
+                <li>
+                  Python standard library for typing, hashing and working with
+                  system functions
+                </li>
+                <li>
+                  Third-party libraries for HTTP requests, HTML parsing and
+                  loading API keys from .env file that we already created.
+                </li>
+                <li>
+                  And the last block of libraries is LangChain / LangGraph for
+                  building the RAG pipeline and ai agents
+                </li>
+              </ul>
+              <p>
+                Copy all of them, because later we will use everything from this
+                list.
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code>#1. Python standard library:
 import hashlib   # hashing (for document IDs)
 import os        # environment variables
 import sys       # system functions
@@ -725,74 +1071,74 @@ from langchain_core.prompts import ChatPromptTemplate  # prompt template
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings  # LLM and embeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter  # text chunking
 from langgraph.graph import START, END, StateGraph  # building the agent graph</code></pre>
-          </div>
-        </section>
-        <section id="block-2">
-          <h2>Block 2. Rag pipeline logic</h2>
+            </div>
+          </section>
+          <section id="block-2">
+            <h2>Block 2. Rag pipeline logic</h2>
 
-          <!-- <h2>Block 1. Imports</h2> -->
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              Before we write code, let’s get the logic. RAG means
-              Retrieval-Augmented Generation. It works in two phases.
-              <code>Indexing</code> and <code>Answering questions</code>. For
-              <code>Indexing</code>: take a document, split it into chunks, turn
-              them into vectors, and put them in a store. To
-              <code>Answer</code>a question, find the most similar chunks and
-              give them to the model as context.
-            </p>
+            <!-- <h2>Block 1. Imports</h2> -->
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                Before we write code, let’s get the logic. RAG means
+                Retrieval-Augmented Generation. It works in two phases.
+                <code>Indexing</code> and <code>Answering questions</code>. For
+                <code>Indexing</code>: take a document, split it into chunks,
+                turn them into vectors, and put them in a store. To
+                <code>Answer</code>a question, find the most similar chunks and
+                give them to the model as context.
+              </p>
 
-            <p>
-              Every RAG system starts with data. We’ll download a page, remove
-              the noise — scripts, styles, navigation, and footer — and keep
-              only clean text. The rule I follow is simple: get rid of
-              unnecessary content to reduce hallucinations. The cleaner the
-              data, the more accurate the search.
-            </p>
-          </div>
-        </section>
+              <p>
+                Every RAG system starts with data. We’ll download a page, remove
+                the noise — scripts, styles, navigation, and footer — and keep
+                only clean text. The rule I follow is simple: get rid of
+                unnecessary content to reduce hallucinations. The cleaner the
+                data, the more accurate the search.
+              </p>
+            </div>
+          </section>
 
-        <section id="block-3">
-          <h2>Block 3. Indexing and getting data from URL</h2>
+          <section id="block-3">
+            <h2>Block 3. Indexing and getting data from URL</h2>
 
-          <!-- <h2>Block 1. Imports</h2> -->
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              Let's start with the indexing phase. We need to get data from the
-              URL and split it into chunks. Create a load_data function that
-              will do this for us.
-            </p>
-            <ul>
-              <li>
-                First of all, we need to get data from the URL that we passed as
-                an argument, using the requests library.
-              </li>
-              <li>
-                Then we need to parse the HTML content using the BeautifulSoup
-                library.
-              </li>
-              <li>
-                Now we need to remove the noise from the content using the
-                following tags: script, style, nav, footer. Because these tags
-                are not needed for the content and they will only add garbage to
-                the content.
-              </li>
-              <li>
-                Also, let's add validation to the function: if the content is
-                not found, we will raise an error.
-              </li>
-              <li>
-                And the final step — where the magic happens — is to return the
-                chunks as a list of Document objects. For this purpose, we will
-                use the Document class from the LangChain library.
-              </li>
-            </ul>
-          </div>
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre><code>def load_data(url: str) -> list[Document]:
+            <!-- <h2>Block 1. Imports</h2> -->
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                Let's start with the indexing phase. We need to get data from
+                the URL and split it into chunks. Create a load_data function
+                that will do this for us.
+              </p>
+              <ul>
+                <li>
+                  First of all, we need to get data from the URL that we passed
+                  as an argument, using the requests library.
+                </li>
+                <li>
+                  Then we need to parse the HTML content using the BeautifulSoup
+                  library.
+                </li>
+                <li>
+                  Now we need to remove the noise from the content using the
+                  following tags: script, style, nav, footer. Because these tags
+                  are not needed for the content and they will only add garbage
+                  to the content.
+                </li>
+                <li>
+                  Also, let's add validation to the function: if the content is
+                  not found, we will raise an error.
+                </li>
+                <li>
+                  And the final step — where the magic happens — is to return
+                  the chunks as a list of Document objects. For this purpose, we
+                  will use the Document class from the LangChain library.
+                </li>
+              </ul>
+            </div>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code>def load_data(url: str) -> list[Document]:
     response = requests.get(
         url,
         timeout=20,
@@ -811,72 +1157,72 @@ from langgraph.graph import START, END, StateGraph  # building the agent graph</
         raise ValueError("No text content found at the URL")
 
     return [Document(page_content=text, metadata={"source": url})]</code></pre>
-          </div>
-        </section>
+            </div>
+          </section>
 
-        <section id="block-4">
-          <h2>Block 4. Configuration</h2>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              To load all values from .env file into the environment variables,
-              lets call load_dotenv()function. Put it after all imports,
-              otherwise the settings will not be loaded.
-              <br />
-              First rule of good code: settings don’t live inside the logic. So
-              put them into separate variables.
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre><code>load_dotenv()
+          <section id="block-4">
+            <h2>Block 4. Configuration</h2>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                To load all values from .env file into the environment
+                variables, lets call load_dotenv()function. Put it after all
+                imports, otherwise the settings will not be loaded.
+                <br />
+                First rule of good code: settings don’t live inside the logic.
+                So put them into separate variables.
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code>load_dotenv()
 
 SOURCE_URL = os.getenv("SOURCE_URL", "https://aismartcode.vercel.app/")
 DB_PATH = "./chroma_db"</code></pre>
-          </div>
-          <div class="say">
-            <b class="t">Line by line</b>
-            <ul>
-              <li>
-                <code></code>
-              </li>
-              <li>
-                <code
-                  >SOURCE_URL = os.getenv("SOURCE_URL",
-                  "https://aismartcode.vercel.app/")</code
-                >
-                — create a variable with the source page URL.
-                <code>os.getenv</code> this function takes two arguments: the
-                variable name and a default value if it’s missing. For the
-                default value, we are using a page from my web site. You can use
-                any other link, but for our project it’s better to use the same
-                one as me — so we stay in sync.
-              </li>
-              <li>
-                <code>DB_PATH = "./chroma_db"</code> — this line of code is a
-                path to the folder where Chroma database stores data on our
-                disk. Thanks to it, we index once and then ask as many questions
-                as we want.
-              </li>
-            </ul>
-          </div>
-        </section>
+            </div>
+            <div class="say">
+              <b class="t">Line by line</b>
+              <ul>
+                <li>
+                  <code></code>
+                </li>
+                <li>
+                  <code
+                    >SOURCE_URL = os.getenv("SOURCE_URL",
+                    "https://aismartcode.vercel.app/")</code
+                  >
+                  — create a variable with the source page URL.
+                  <code>os.getenv</code> this function takes two arguments: the
+                  variable name and a default value if it’s missing. For the
+                  default value, we are using a page from my web site. You can
+                  use any other link, but for our project it’s better to use the
+                  same one as me — so we stay in sync.
+                </li>
+                <li>
+                  <code>DB_PATH = "./chroma_db"</code> — this line of code is a
+                  path to the folder where Chroma database stores data on our
+                  disk. Thanks to it, we index once and then ask as many
+                  questions as we want.
+                </li>
+              </ul>
+            </div>
+          </section>
 
-        <section id="block-5">
-          <h2>Block 5. Models: embeddings and LLM</h2>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              Here’s the fun part. Lets load our two models for embeddings and
-              answering questions. An embedding turns text into a set of numbers
-              so that chunks of text, that are close in meaning, sit close
-              together in “meaning space.” That closeness is what lets us search
-              by meaning, not by exact word match.
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre><code># Create an embeddings model: turns text into vectors for semantic search
+          <section id="block-5">
+            <h2>Block 5. Models: embeddings and LLM</h2>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                Here’s the fun part. Lets load our two models for embeddings and
+                answering questions. An embedding turns text into a set of
+                numbers so that chunks of text, that are close in meaning, sit
+                close together in “meaning space.” That closeness is what lets
+                us search by meaning, not by exact word match.
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code># Create an embeddings model: turns text into vectors for semantic search
 embeddings = OpenAIEmbeddings(
     # Which embedding model to use (env var, fallback to nomic-embed-text)
     model=os.getenv("EMBEDDING_MODEL", "nomic-embed-text"),
@@ -885,20 +1231,21 @@ embeddings = OpenAIEmbeddings(
     # Ollama ignores the key, but the OpenAI client requires one -> dummy value
     api_key=os.getenv("LLM_API_KEY", "ollama"),
 )</code></pre>
-            <div class="say">
-              <b class="t">Narration</b>
-              <p>
-                The second model, the LLM, writes the final answer. Here is The
-                trick: Ollama can pretend to be the OpenAI API, so we use OpenAI
-                clients and simply change the base URL. So you can use your
-                chatGpt model # for example:model=os.getenv("OPENAI_MODEL",
-                "gpt-4.1-mini"). pay attention to the temperature parameter, it
-                is set to 0, because we want to get factual answers, no
-                creativity from the model. If you want to get more creative
-                answers from your model, you can set it to 0.5 or 1.
-              </p>
-            </div>
-            <pre><code># Create the chat model (the "brain" that generates answers)
+              <div class="say">
+                <b class="t">Narration</b>
+                <p>
+                  The second model, the LLM, writes the final answer. Here is
+                  The trick: Ollama can pretend to be the OpenAI API, so we use
+                  OpenAI clients and simply change the base URL. So you can use
+                  your chatGpt model # for
+                  example:model=os.getenv("OPENAI_MODEL", "gpt-4.1-mini"). pay
+                  attention to the temperature parameter, it is set to 0,
+                  because we want to get factual answers, no creativity from the
+                  model. If you want to get more creative answers from your
+                  model, you can set it to 0.5 or 1.
+                </p>
+              </div>
+              <pre><code># Create the chat model (the "brain" that generates answers)
 llm = ChatOpenAI(
     model=os.getenv("CHAT_MODEL", "llama3.1"),                  # chat model
     base_url=os.getenv("LLM_API_BASE", "http://127.0.0.1:11434/v1"),  # local Ollama
@@ -906,96 +1253,97 @@ llm = ChatOpenAI(
     # 0 = deterministic, factual answers (good for RAG, no creativity)
     temperature=0,
 )</code></pre>
-          </div>
-        </section>
+            </div>
+          </section>
 
-        <section id="block-6">
-          <h2>Block 6. Split data into chunks</h2>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p style="color: red; font-weight: bold">
-              Why not just give the model the whole page? First, models have a
-              limited context window. Second, search over a huge text gets
-              fuzzy. So we split a large document into chunks — small
-              meaning-sized pieces.
-            </p>
-            <p>
-              when we got our data from the URL, we need to split it into
-              chunks.
-            </p>
+          <section id="block-6">
+            <h2>Block 6. Split data into chunks</h2>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p style="color: red; font-weight: bold">
+                Why not just give the model the whole page? First, models have a
+                limited context window. Second, search over a huge text gets
+                fuzzy. So we split a large document into chunks — small
+                meaning-sized pieces.
+              </p>
+              <p>
+                when we got our data from the URL, we need to split it into
+                chunks.
+              </p>
 
-            <div class="cb">
-              <span class="lang">python</span>
-              <pre><code># 2. Split data into chunks
+              <div class="cb">
+                <span class="lang">python</span>
+                <pre><code># 2. Split data into chunks
 def split_documents(documents: list[Document]) -> list[Document]:
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=800,
         chunk_overlap=150,
     )
     return splitter.split_documents(documents)</code></pre>
+              </div>
+
+              <p>
+                In the code, we use RecursiveCharacterTextSplitter class from
+                LangChain library. It will split the text into chunks of 800
+                characters with 150 characters overlap. Why did we choose
+                numbers of characters? Because it is a good balance between the
+                context window of the model and the accuracy of the search. The
+                overlap is important to avoid losing context when the chunks are
+                joined together. You can experiment with different values to
+                find the best one for your model.
+              </p>
             </div>
+          </section>
 
-            <p>
-              In the code, we use RecursiveCharacterTextSplitter class from
-              LangChain library. It will split the text into chunks of 800
-              characters with 150 characters overlap. Why did we choose numbers
-              of characters? Because it is a good balance between the context
-              window of the model and the accuracy of the search. The overlap is
-              important to avoid losing context when the chunks are joined
-              together. You can experiment with different values to find the
-              best one for your model.
-            </p>
-          </div>
-        </section>
+          <section id="block-7">
+            <h2>Block 7. Vector store and prompt</h2>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                when we finished with the splitting, we need to store the chunks
+                in a vector store. We will use Chroma class from LangChain
+                library. It will store the chunks in a vector store. lets create
+                vector store.
+              </p>
 
-        <section id="block-7">
-          <h2>Block 7. Vector store and prompt</h2>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              when we finished with the splitting, we need to store the chunks
-              in a vector store. We will use Chroma class from LangChain
-              library. It will store the chunks in a vector store. lets create
-              vector store.
-            </p>
-
-            <div class="cb">
-              <span class="lang">python</span>
-              <pre><code>vector_store = Chroma(
+              <div class="cb">
+                <span class="lang">python</span>
+                <pre><code>vector_store = Chroma(
     collection_name="rag_documents",  # collection name, like a table name in a regular database.
     embedding_function=embeddings,  # tell the store which model to use for vectors
     persist_directory=DB_PATH,  # persist_directory points to the location on the disk.
 )</code></pre>
+              </div>
+
+              <p>
+                A vector store holds text chunks together with their vectors and
+                can instantly find the nearest ones. embedding_function tell the
+                store which model to use for vectors, both when adding and when
+                searching. It must be the same model, or the "maps of meaning"
+                won't line up. And persist_directory points to the location on
+                the disk where the data will be stored. if the directory does
+                not exist, it will be created.
+              </p>
             </div>
+          </section>
 
-            <p>
-              A vector store holds text chunks together with their vectors and
-              can instantly find the nearest ones. embedding_function tell the
-              store which model to use for vectors, both when adding and when
-              searching. It must be the same model, or the "maps of meaning"
-              won't line up. And persist_directory points to the location on the
-              disk where the data will be stored. if the directory does not
-              exist, it will be created.
-            </p>
-          </div>
-        </section>
+          <section id="block-8">
+            <h2>Block 8. Steps 3–4 — embeddings and save to Chroma</h2>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                When we create the vector store, we need to add the chunks to
+                it. Now let's put the indexing process together using the
+                functions we've created to load, split, embed, and store the
+                data. Let's create an index_documents function. We'll load the
+                data from source_url using the load_data function, then split
+                the loaded document into chunks using the split_documents
+                function.
+              </p>
 
-        <section id="block-8">
-          <h2>Block 8. Steps 3–4 — embeddings and save to Chroma</h2>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              When we create the vector store, we need to add the chunks to it.
-              Now let's put the indexing process together using the functions
-              we've created to load, split, embed, and store the data. Let's
-              create an index_documents function. We'll load the data from
-              source_url using the load_data function, then split the loaded
-              document into chunks using the split_documents function.
-            </p>
-
-            <div class="cb">
-              <span class="lang">python</span>
-              <pre><code># 3–4. Generate embeddings and store chunks in ChromaDB
+              <div class="cb">
+                <span class="lang">python</span>
+                <pre><code># 3–4. Generate embeddings and store chunks in ChromaDB
 def index_documents() -> None:
     documents = load_data(SOURCE_URL)
     chunks = split_documents(documents)
@@ -1011,111 +1359,111 @@ def index_documents() -> None:
     vector_store.add_documents(documents=chunks, ids=ids)  # add the chunks to the vector store.
 
     print(f"Indexed {len(chunks)} chunks from {SOURCE_URL}")</code></pre>
+              </div>
+
+              <p>
+                Then we'll build the list of identifiers for each chunk using
+                unique ID based on a hash, to avoid duplicates in case of a
+                second run. And finally we will use add_documents method from
+                Chroma class to add the chunks to the vector store. And print
+                information about the number of chunks that were added.
+              </p>
             </div>
+          </section>
 
-            <p>
-              Then we'll build the list of identifiers for each chunk using
-              unique ID based on a hash, to avoid duplicates in case of a second
-              run. And finally we will use add_documents method from Chroma
-              class to add the chunks to the vector store. And print information
-              about the number of chunks that were added.
-            </p>
-          </div>
-        </section>
+          <section id="block-9">
+            <h2>Block 9. Graph state</h2>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                Now one of the most interesting parts. LangGraph describes a
+                process as a graph: nodes are steps, edges are transitions
+                between them. To save the state between the nodes, we will use a
+                dictionary,that every node reads and updates. You can consider
+                it like a memory. We will use TypedDict class from typing module
+                to define the schema of the state.
+              </p>
 
-        <section id="block-9">
-          <h2>Block 9. Graph state</h2>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              Now one of the most interesting parts. LangGraph describes a
-              process as a graph: nodes are steps, edges are transitions between
-              them. To save the state between the nodes, we will use a
-              dictionary,that every node reads and updates. You can consider it
-              like a memory. We will use TypedDict class from typing module to
-              define the schema of the state.
-            </p>
-
-            <div class="cb">
-              <span class="lang">python</span>
-              <pre><code># 5–9. RAG workflow
+              <div class="cb">
+                <span class="lang">python</span>
+                <pre><code># 5–9. RAG workflow
 class RAGState(TypedDict):
     question: str # the user's question
     context: str # the joined text of retrieved chunks
     sources: list[str] # the list of sources
     answer: str # the final answer</code></pre>
+              </div>
+              <p>
+                The state schema is the definition of the keys that will be used
+                in the state dictionary. We will use the following keys:
+              </p>
+              <ul>
+                <li>the user's question</li>
+                <li>the joined text of retrieved chunks</li>
+                <li>the list of sources</li>
+                <li>and the final answer</li>
+              </ul>
             </div>
-            <p>
-              The state schema is the definition of the keys that will be used
-              in the state dictionary. We will use the following keys:
-            </p>
-            <ul>
-              <li>the user's question</li>
-              <li>the joined text of retrieved chunks</li>
-              <li>the list of sources</li>
-              <li>and the final answer</li>
-            </ul>
-          </div>
-        </section>
-        <section id="block-10">
-          <h2>Block 10. Nodes and the retrieval step</h2>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              Now lets create our nodes.<code>retrieve function</code> will
-              create the retrieval node. It performs semantic search to retrieve
-              the most relevant chunks based on vector similarity.
-            </p>
-          </div>
+          </section>
+          <section id="block-10">
+            <h2>Block 10. Nodes and the retrieval step</h2>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                Now lets create our nodes.<code>retrieve function</code> will
+                create the retrieval node. It performs semantic search to
+                retrieve the most relevant chunks based on vector similarity.
+              </p>
+            </div>
 
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre><code># 6–7. Retrieve relevant chunks using vector similarity search
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code># 6–7. Retrieve relevant chunks using vector similarity search
 def retrieve(state: RAGState) -> dict:
     # Graph node: find the most relevant chunks for the user's question
     documents = vector_store.similarity_search(
         state["question"],   # the user's question from graph state
         k=3,                 # return top-3 most similar chunks
     )</code></pre>
-          </div>
+            </div>
 
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              It gets the current state and returns a dictionary with only the
-              updates, not the whole state.
-            </p>
-            <p>
-              Remember that every node should get the state as an argument to
-              update it with the new values after the work is done.
-            </p>
-          </div>
-          <div class="say">
-            <b class="t">Line by line</b>
-            <ul>
-              <li>
-                <code>similarity_search</code> is used to find the most relevant
-                chunks for the user's question The question from user's input
-                becomes a vector, and Chroma finds the three nearest chunks by
-                meaning. the <code>k</code> value is used to specify how many
-                chunks to return. More chunks means wider context, but also more
-                noise for llm model.
-              </li>
-              <li>
-                <pre><code># 6–7. Retrieve relevant chunks using vector similarity search
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                It gets the current state and returns a dictionary with only the
+                updates, not the whole state.
+              </p>
+              <p>
+                Remember that every node should get the state as an argument to
+                update it with the new values after the work is done.
+              </p>
+            </div>
+            <div class="say">
+              <b class="t">Line by line</b>
+              <ul>
+                <li>
+                  <code>similarity_search</code> is used to find the most
+                  relevant chunks for the user's question The question from
+                  user's input becomes a vector, and Chroma finds the three
+                  nearest chunks by meaning. the <code>k</code> value is used to
+                  specify how many chunks to return. More chunks means wider
+                  context, but also more noise for llm model.
+                </li>
+                <li>
+                  <pre><code># 6–7. Retrieve relevant chunks using vector similarity search
 
 # Join the retrieved chunks into one context string for the LLM
 context = "\n\n".join(
     document.page_content for document in documents
 )</code></pre>
-              </li>
-              <li>
-                When chunks are retrieved, we need to join them into one context
-                string for the LLM.
-              </li>
+                </li>
+                <li>
+                  When chunks are retrieved, we need to join them into one
+                  context string for the LLM.
+                </li>
 
-              <li>
-                <pre><code># Collect unique source URLs (set -> deduplication -> list) to avoid duplicates
+                <li>
+                  <pre><code># Collect unique source URLs (set -> deduplication -> list) to avoid duplicates
 sources = list({
     document.metadata["source"]
     for document in documents
@@ -1126,37 +1474,37 @@ return {
     "context": context,
     "sources": sources,
 }</code></pre>
-              </li>
-              <li>
-                <code
-                  >sources = removes duplicates, since several chunks can come
-                  from the same page.</code
-                >
-              </li>
-              <li>
-                and finally LangGraph merges these updated keys into the shared
-                state.
-              </li>
-            </ul>
-          </div>
-        </section>
+                </li>
+                <li>
+                  <code
+                    >sources = removes duplicates, since several chunks can come
+                    from the same page.</code
+                  >
+                </li>
+                <li>
+                  and finally LangGraph merges these updated keys into the
+                  shared state.
+                </li>
+              </ul>
+            </div>
+          </section>
 
-        <section id="block-11">
-          <h2>Block 11. Answer generation and graph assembly</h2>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              The second node is generate. To generate an answer, we first need
-              to create a prompt template. It takes the retrieved context and
-              the user's question, fills in the template, and sends the
-              resulting prompt to the model. Then we connect all the nodes into
-              a chain: START → retrieve → generate → END, and compile the graph
-              into a runnable object.
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre><code>prompt = ChatPromptTemplate.from_messages([
+          <section id="block-11">
+            <h2>Block 11. Answer generation and graph assembly</h2>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                The second node is generate. To generate an answer, we first
+                need to create a prompt template. It takes the retrieved context
+                and the user's question, fills in the template, and sends the
+                resulting prompt to the model. Then we connect all the nodes
+                into a chain: START → retrieve → generate → END, and compile the
+                graph into a runnable object.
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code>prompt = ChatPromptTemplate.from_messages([
     (
         "system",
         """Answer the question using only the provided context.
@@ -1168,122 +1516,122 @@ Context:
     ),
     ("human", "{question}"),
 ])</code></pre>
-          </div>
+            </div>
 
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              In the prompt template we have system,context and question. System
-              is the system prompt that tells the model what to do. Context is
-              the joined text of retrieved 3 most relevant chunks, that we got
-              from retrive function in the updated state. And Question is the
-              user's question.
-            </p>
-            <p>Lets create the generate_answer function.</p>
-          </div>
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre><code>def generate(state: RAGState) -> dict:</code></pre>
-          </div>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                In the prompt template we have system,context and question.
+                System is the system prompt that tells the model what to do.
+                Context is the joined text of retrieved 3 most relevant chunks,
+                that we got from retrive function in the updated state. And
+                Question is the user's question.
+              </p>
+              <p>Lets create the generate_answer function.</p>
+            </div>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code>def generate(state: RAGState) -> dict:</code></pre>
+            </div>
 
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              The next step is to invoke the prompt template with the context
-              and question from the state.
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre><code>messages = prompt.invoke({
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                The next step is to invoke the prompt template with the context
+                and question from the state.
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code>messages = prompt.invoke({
     "context": state["context"],  # the joined text of retrieved chunks (k=3)
     "question": state["question"],
 })</code></pre>
-          </div>
+            </div>
 
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>Then we ask the model to generate an answer.</p>
-          </div>
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre><code>response = llm.invoke(messages) # ask the model to generate an answer</code></pre>
-          </div>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>And finally we return the answer from the model.</p>
-          </div>
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre><code>return {"answer": str(response.content)}</code></pre>
-          </div>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>Then we ask the model to generate an answer.</p>
+            </div>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code>response = llm.invoke(messages) # ask the model to generate an answer</code></pre>
+            </div>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>And finally we return the answer from the model.</p>
+            </div>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code>return {"answer": str(response.content)}</code></pre>
+            </div>
 
-          <div class="say">
-            <b class="t">Narration</b>
-            Pay attention to the system prompt. Here, we're implementing basic
-            safeguards directly within the prompt. This is a simplified approach
-            for our demo. In production, security requires a more comprehensive
-            approach, which we'll cover in the advanced course.
-          </div>
-        </section>
+            <div class="say">
+              <b class="t">Narration</b>
+              Pay attention to the system prompt. Here, we're implementing basic
+              safeguards directly within the prompt. This is a simplified
+              approach for our demo. In production, security requires a more
+              comprehensive approach, which we'll cover in the advanced course.
+            </div>
+          </section>
 
-        <section id="block-12">
-          <h2>Block 12. Graph assembly</h2>
-          <div class="cb">
-            <span class="lang">bash</span>
-            <pre><code></code></pre>
-          </div>
-          <!-- <h2>Block 1. Imports</h2> -->
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              Now we should define and compile the LangGraph workflow First of
-              all we need to create a builder object.
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre><code>builder = StateGraph(RAGState)</code></pre>
-          </div>
+          <section id="block-12">
+            <h2>Block 12. Graph assembly</h2>
+            <div class="cb">
+              <span class="lang">bash</span>
+              <pre><code></code></pre>
+            </div>
+            <!-- <h2>Block 1. Imports</h2> -->
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                Now we should define and compile the LangGraph workflow First of
+                all we need to create a builder object.
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code>builder = StateGraph(RAGState)</code></pre>
+            </div>
 
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              The next step We need to add the nodes retrive and generate to the
-              builder.
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre><code>builder.add_node("retrieve", retrieve)
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                The next step We need to add the nodes retrive and generate to
+                the builder.
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code>builder.add_node("retrieve", retrieve)
 builder.add_node("generate", generate_answer)</code></pre>
-          </div>
+            </div>
 
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              to combine the nodes we need to add edges showing the flow of the
-              graph, using START, END key words .
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre><code>builder.add_edge(START, "retrieve")
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                to combine the nodes we need to add edges showing the flow of
+                the graph, using START, END key words .
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code>builder.add_edge(START, "retrieve")
 builder.add_edge("retrieve", "generate")
 builder.add_edge("generate", END)</code></pre>
-          </div>
+            </div>
 
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>and finally we compile the graph into a runnable object.</p>
-          </div>
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre><code>rag_graph = builder.compile()</code></pre>
-          </div>
-        </section>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>and finally we compile the graph into a runnable object.</p>
+            </div>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code>rag_graph = builder.compile()</code></pre>
+            </div>
+          </section>
 
-        <!--        
+          <!--        
        <section id="b1">
         <p><b>5. Run commands (you’ll need these at the end)</b></p>
         <div class="cb">
@@ -1301,20 +1649,20 @@ uv run main.py         # Q&amp;A
         </div>
        </section> -->
 
-        <section id="block-13">
-          <h2>Block 13. Running and the entry point</h2>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              What’s left is a convenient interface. One function asks the graph
-              a question and prints the answer with sources. to do it let's
-              create entry point with two actions, where the application will
-              either index document or answer user's question. main block
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre>
+          <section id="block-13">
+            <h2>Block 13. Running and the entry point</h2>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                What’s left is a convenient interface. One function asks the
+                graph a question and prints the answer with sources. to do it
+                let's create entry point with two actions, where the application
+                will either index document or answer user's question. main block
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre>
             
             <code>if __name__ == "__main__":
 
@@ -1322,34 +1670,34 @@ uv run main.py         # Q&amp;A
 
     ask_question(question)</code>
           </pre>
-          </div>
+            </div>
 
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              Here we should add conditoion for the index_documents action. If
-              the application is run with the index argument, the application
-              will index the document.
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre><code>if len(sys.argv) > 1 and sys.argv[1] == "index":
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                Here we should add conditoion for the index_documents action. If
+                the application is run with the index argument, the application
+                will index the document.
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code>if len(sys.argv) > 1 and sys.argv[1] == "index":
     index_documents()</code></pre>
-          </div>
+            </div>
 
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              If the application is run without the index argument, the
-              application will check if there are indexed documents in our
-              vectore store and enter dialogue mode.
-            </p>
-          </div>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                If the application is run without the index argument, the
+                application will check if there are indexed documents in our
+                vectore store and enter dialogue mode.
+              </p>
+            </div>
 
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre>
 <code>if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "index":
         index_documents()
@@ -1367,17 +1715,17 @@ uv run main.py         # Q&amp;A
             if question:
                 ask_question(question)</code>
 </pre>
-          </div>
+            </div>
 
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              And the final step we need to create the ask_question function.
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                And the final step we need to create the ask_question function.
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre>
             <code>def ask_question(question: str) -> None:
     result = rag_graph.invoke({
         "question": question,
@@ -1386,19 +1734,19 @@ uv run main.py         # Q&amp;A
         "answer": "",
     })</code>
           </pre>
-          </div>
+            </div>
 
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              Here rag_graph.invoke() is used to run the graph with the initial
-              state.
-            </p>
-          </div>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                Here rag_graph.invoke() is used to run the graph with the
+                initial state.
+              </p>
+            </div>
 
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre>
             <code>def ask_question(question: str) -> None:
     result = rag_graph.invoke({
         "question": question,
@@ -1407,16 +1755,16 @@ uv run main.py         # Q&amp;A
         "answer": "",
     })</code>
           </pre>
-          </div>
+            </div>
 
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>Also we need to print the answer and sources.</p>
-          </div>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>Also we need to print the answer and sources.</p>
+            </div>
 
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre>
             <code>def ask_question(question: str) -> None:
     result = rag_graph.invoke({
         "question": question,
@@ -1432,84 +1780,86 @@ uv run main.py         # Q&amp;A
     for source in result["sources"]:
         print(f"- {source}")</code>
           </pre>
-          </div>
-        </section>
-        <section id="block-14">
-          <h2>Block 14. FINAL demo</h2>
-
-          <div class="say">
-            <b class="t">Narration · Closing</b>
-            <p>
-              Let’s run it. First of all we should index our web page. for this
-              purpose we need to run the application with the index argument.
-            </p>
-            <div class="cb">
-              <span class="lang">bash</span>
-              <pre><code>uv run main.py index</code></pre>
             </div>
+          </section>
+          <section id="block-14">
+            <h2>Block 14. FINAL demo</h2>
 
-            <p>After indexing we can ask a question about the page.</p>
-            <p>
-              running the application without the <code>index</code> argument to
-              enter dialogue mode.
-            </p>
+            <div class="say">
+              <b class="t">Narration · Closing</b>
+              <p>
+                Let’s run it. First of all we should index our web page. for
+                this purpose we need to run the application with the index
+                argument.
+              </p>
+              <div class="cb">
+                <span class="lang">bash</span>
+                <pre><code>uv run main.py index</code></pre>
+              </div>
 
-            <div class="cb">
-              <span class="lang">bash</span>
-              <pre><code>uv run main.py</code></pre>
+              <p>After indexing we can ask a question about the page.</p>
+              <p>
+                running the application without the <code>index</code> argument
+                to enter dialogue mode.
+              </p>
+
+              <div class="cb">
+                <span class="lang">bash</span>
+                <pre><code>uv run main.py</code></pre>
+              </div>
+              <p>You can ask a question about the page.</p>
+              <div class="cb">
+                <span class="lang">bash</span>
+                <pre><code>May I get a promo code for the Advanced course?</code></pre>
+              </div>
+
+              <p>
+                If You see an answer and a source? congratulations, your own RAG
+                is working.
+              </p>
+
+              <p>
+                If you go to the page you will see the promocode block, it means
+                that our RAG is working correctly. If you ask something
+                different that is not on the page, you will see the answer "I
+                don't know". let's try it.
+              </p>
+              <div class="cb">
+                <span class="lang">bash</span>
+                <pre><code>What is the capital of France?</code></pre>
+              </div>
+              <p>You see "I don't know".</p>
             </div>
-            <p>You can ask a question about the page.</p>
-            <div class="cb">
-              <span class="lang">bash</span>
-              <pre><code>May I get a promo code for the Advanced course?</code></pre>
+          </section>
+
+          <section id="block-15">
+            <h2>Block 15. Promo code for the Advanced course</h2>
+            <div class="say">
+              <b class="t">Narration · Final block</b>
+              <p>
+                This block isn’t part of the demo and isn’t a joke: it’s real.
+                The Advanced course actually exists, and you can get it. If you
+                want to go further — production architecture, RAG quality
+                evaluation, agents, and complex graphs — on Udemy you can get a
+                discount with the coupon now on screen.
+              </p>
             </div>
-
-            <p>
-              If You see an answer and a source? congratulations, your own RAG
-              is working.
-            </p>
-
-            <p>
-              If you go to the page you will see the promocode block, it means
-              that our RAG is working correctly. If you ask something different
-              that is not on the page, you will see the answer "I don't know".
-              let's try it.
-            </p>
             <div class="cb">
-              <span class="lang">bash</span>
-              <pre><code>What is the capital of France?</code></pre>
+              <span class="lang">promo code</span>
+              <pre><code>PROMO_CODE_HERE</code></pre>
             </div>
-            <p>You see "I don't know".</p>
-          </div>
-        </section>
-
-        <section id="block-15">
-          <h2>Block 15. Promo code for the Advanced course</h2>
-          <div class="say">
-            <b class="t">Narration · Final block</b>
-            <p>
-              This block isn’t part of the demo and isn’t a joke: it’s real. The
-              Advanced course actually exists, and you can get it. If you want
-              to go further — production architecture, RAG quality evaluation,
-              agents, and complex graphs — on Udemy you can get a discount with
-              the coupon now on screen.
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">promo code</span>
-            <pre><code>PROMO_CODE_HERE</code></pre>
-          </div>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              Copy the promo code with the button below and enter it at checkout
-              on Udemy. I’ll leave the course link in the video description.
-              Thanks for watching to the end — see you in the next lesson!
-            </p>
-          </div>
-        </section>
-      </main>
-    </div>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                Copy the promo code with the button below and enter it at
+                checkout on Udemy. I’ll leave the course link in the video
+                description. Thanks for watching to the end — see you in the
+                next lesson!
+              </p>
+            </div>
+          </section>
+        </main>
+      </div>
     </div>
 
     <div
@@ -1519,71 +1869,85 @@ uv run main.py         # Q&amp;A
       aria-labelledby="tab-fastapi"
       hidden
     >
-      <div class="tab-panel-inner">
-        <h1>FastAPI: expose the RAG as an API</h1>
-        <p class="lead">
-          After the LLM Agent lesson — wrap <code>rag_graph</code> in HTTP
-          endpoints. Same style: narration blocks + copyable code.
-        </p>
+      <div class="page">
+        <aside class="toc" id="toc-fastapi">
+          <div class="toc-bar">
+            <button
+              type="button"
+              id="toc-fastapi-toggle"
+              aria-expanded="false"
+              aria-controls="nav-fastapi"
+            >
+              Contents
+            </button>
+            <button
+              type="button"
+              id="toc-fastapi-close"
+              aria-label="Close contents"
+            >
+              Close
+            </button>
+          </div>
+          <nav id="nav-fastapi" aria-label="FastAPI lesson sections"></nav>
+        </aside>
+        <main class="content">
+          <h1>FastAPI: expose the RAG as an HTTP API</h1>
+          <p class="lead">
+            Same <code>main.py</code>. Add Pydantic contracts,
+            <code>/health</code>, <code>/ask</code>, <code>/index</code>, and
+            Swagger docs.
+          </p>
+          <section id="fastapi-goal">
+            <h2>Block 1. Lesson goal</h2>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                <strong>Goal:</strong> add an HTTP interface and validation
+                while keeping everything in one <code>main.py</code>.
+              </p>
+              <p>
+                Until now only someone running a Python script could use the
+                app. But RAG is usually needed by a frontend, another service,
+                or a mobile app. They should not care about Chroma, LangGraph,
+                or embeddings. They need a clear HTTP contract: send a question
+                — get an answer and sources. That is the contract we build now.
+              </p>
+            </div>
+          </section>
 
-        <section id="fastapi-intro">
-          <h2>Block 1. Why FastAPI</h2>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              The CLI is great for learning, but in real projects people talk to
-              your LLM through HTTP. FastAPI turns our
-              <code>rag_graph</code> into a small web API: one endpoint indexes
-              the page, another answers questions. Remember — we already
-              installed FastAPI in the LLM Agent setup with
-              <code>uv add "fastapi[standard]"</code>.
-            </p>
-          </div>
-        </section>
+          <section id="fastapi-install">
+            <h2>Block 2. Install and imports</h2>
+            <div class="cb">
+              <span class="lang">bash</span>
+              <pre><code>uv add "fastapi[standard]"</code></pre>
+            </div>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                Add these imports near the top of <code>main.py</code> (do not
+                duplicate imports you already have).
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code>from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field, HttpUrl
+import uvicorn</code></pre>
+            </div>
+          </section>
 
-        <section id="fastapi-imports">
-          <h2>Block 2. Imports and the app object</h2>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              Add these imports near the top of <code>main.py</code>.
-              <code>FastAPI</code> is the server,
-              <code>HTTPException</code> returns clean errors, and
-              <code>BaseModel</code> from Pydantic describes the JSON body.
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre><code>from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field</code></pre>
-          </div>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              Then create the app. The title shows up in the automatic docs at
-              <code>/docs</code>.
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre><code>app = FastAPI(title="RAG API", version="1.0.0")</code></pre>
-          </div>
-        </section>
-
-        <section id="fastapi-schemas">
-          <h2>Block 3. Request and response schemas</h2>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              We need a clear contract. The client sends a question as JSON; we
-              return the answer and the source URLs. Pydantic validates the
-              input for us — empty questions are rejected automatically.
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre><code>class AskRequest(BaseModel):
-    question: str = Field(min_length=1)
+          <section id="fastapi-schemas">
+            <h2>Block 3. Pydantic request and response schemas</h2>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code>class AskRequest(BaseModel):
+    question: str = Field(
+        min_length=1,
+        max_length=2000,
+        description="Question for the RAG assistant",
+        examples=["What is the promo code?"],
+    )
+    top_k: int = Field(default=3, ge=1, le=10)
 
 
 class AskResponse(BaseModel):
@@ -1591,140 +1955,279 @@ class AskResponse(BaseModel):
     sources: list[str]
 
 
+class IndexRequest(BaseModel):
+    url: HttpUrl | None = Field(
+        default=None,
+        description="If omitted, use SOURCE_URL",
+    )
+
+
 class IndexResponse(BaseModel):
-    status: str
-    source_url: str</code></pre>
-          </div>
-        </section>
+    indexed: int
+    source: str
 
-        <section id="fastapi-helper">
-          <h2>Block 4. Helper that runs the graph</h2>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              Extract the graph call into a small helper that returns a dict
-              instead of printing. Both the CLI and FastAPI can reuse it.
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre><code>def run_rag(question: str) -> dict:
-    result = rag_graph.invoke({
-        "question": question,
-        "context": "",
-        "sources": [],
-        "answer": "",
-    })
-    return {
-        "answer": result["answer"],
-        "sources": result["sources"],
-    }</code></pre>
-          </div>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              Update <code>ask_question</code> so the CLI still prints nicely,
-              but the heavy work goes through <code>run_rag</code>.
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre><code>def ask_question(question: str) -> None:
-    result = run_rag(question)
 
-    print("\nAnswer:")
-    print(result["answer"])
+class HealthResponse(BaseModel):
+    status: str = "ok"</code></pre>
+            </div>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                Think of Pydantic as the gate at the API entrance. An empty
+                question should not trigger retrieval. Asking for 500 documents
+                should not accidentally create an expensive query. The schema
+                limits question length and <code>top_k</code>. FastAPI also uses
+                these models for Swagger UI docs.
+              </p>
+            </div>
+          </section>
 
-    print("\nSources:")
-    for source in result["sources"]:
-        print(f"- {source}")</code></pre>
-          </div>
-        </section>
+          <section id="fastapi-topk">
+            <h2>Block 4. Make top_k affect retrieval</h2>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                So that <code>top_k</code> from the API actually changes search,
+                update retrieval and the graph state. Do not hard-code
+                <code>3</code> inside the node.
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code>def retrieve(state: RAGState) -> dict:
+    question = state["question"]
+    top_k = state.get("top_k", 3)
 
-        <section id="fastapi-endpoints">
-          <h2>Block 5. POST /index and POST /ask</h2>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              First endpoint: re-index the page from <code>SOURCE_URL</code>.
-              Useful when the website content changes.
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre><code>@app.post("/index", response_model=IndexResponse)
-def api_index() -> IndexResponse:
-    index_documents()
-    return IndexResponse(status="ok", source_url=SOURCE_URL)</code></pre>
-          </div>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              Second endpoint: ask a question. If the vector store is empty, we
-              return HTTP 400 and tell the client to index first — same idea as
-              in the CLI.
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">python</span>
-            <pre><code>@app.post("/ask", response_model=AskResponse)
-def api_ask(body: AskRequest) -> AskResponse:
-    if vector_store._collection.count() == 0:
+    docs = vector_store.similarity_search(question, k=top_k)
+    context = "\n\n".join(doc.page_content for doc in docs)
+    sources = list(dict.fromkeys(
+        doc.metadata.get("source", "")
+        for doc in docs
+        if doc.metadata.get("source")
+    ))
+
+    return {"context": context, "sources": sources}</code></pre>
+            </div>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code>class RAGState(TypedDict):
+    question: str
+    context: str
+    sources: list[str]
+    answer: str
+    top_k: int</code></pre>
+            </div>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                Pass <code>top_k</code> when you invoke the graph. If your state
+                type is declared differently, add the field to the existing
+                TypedDict — do not create a second type.
+              </p>
+            </div>
+          </section>
+
+          <section id="fastapi-routes">
+            <h2>Block 5. FastAPI app and routes</h2>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code>app = FastAPI(
+    title="RAG Agent API",
+    version="1.0.0",
+    description="A RAG assistant exposed over HTTP",
+)
+
+
+@app.get("/health", response_model=HealthResponse)
+def health() -> HealthResponse:
+    return HealthResponse()
+
+
+@app.post("/ask", response_model=AskResponse)
+def ask(payload: AskRequest) -> AskResponse:
+    try:
+        result = rag_graph.invoke({
+            "question": payload.question,
+            "context": "",
+            "sources": [],
+            "answer": "",
+            "top_k": payload.top_k,
+        })
+    except Exception as exc:
+        # In production log details on the server,
+        # but do not return an internal traceback to the client.
         raise HTTPException(
-            status_code=400,
-            detail="No indexed documents. Call POST /index first.",
-        )
+            status_code=500,
+            detail="RAG request failed",
+        ) from exc
 
-    result = run_rag(body.question)
     return AskResponse(
         answer=result["answer"],
-        sources=result["sources"],
-    )</code></pre>
-          </div>
-        </section>
+        sources=result.get("sources", []),
+    )
 
-        <section id="fastapi-run">
-          <h2>Block 6. Run and test</h2>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              Start the API. FastAPI’s dev server reloads when you change the
-              file. Keep Ollama running in the background.
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">bash</span>
-            <pre><code>uv run fastapi dev main.py</code></pre>
-          </div>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              Open <code>http://127.0.0.1:8000/docs</code> — you get an
-              interactive Swagger UI. Or use curl. Index first, then ask.
-            </p>
-          </div>
-          <div class="cb">
-            <span class="lang">bash</span>
-            <pre><code>curl -X POST http://127.0.0.1:8000/index
+
+@app.post("/index", response_model=IndexResponse)
+def index(payload: IndexRequest | None = None) -> IndexResponse:
+    target_url = str(payload.url) if payload and payload.url else SOURCE_URL
+    try:
+        indexed_count = index_documents(target_url)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail="Indexing failed",
+        ) from exc
+
+    return IndexResponse(
+        indexed=indexed_count,
+        source=target_url,
+    )</code></pre>
+            </div>
+            <div class="say">
+              <b class="t">Narration · Why def</b>
+              <p>
+                These are plain <code>def</code> routes, not
+                <code>async def</code>. Our <code>rag_graph.invoke()</code> and
+                <code>index_documents()</code> calls are synchronous and can
+                block. FastAPI runs normal path functions in a threadpool, so we
+                do not block the event loop. The alternative is a fully async
+                path with <code>await rag_graph.ainvoke()</code>. Do not wrap a
+                heavy sync function in <code>async def</code> just to look
+                async.
+              </p>
+            </div>
+            <div class="say">
+              <b class="t">Warning</b>
+              <p>
+                A URL from the request is not a harmless parameter. In this
+                teaching example we accept <code>HttpUrl</code>. In a public
+                production API you must also guard against SSRF: block
+                localhost, private IPs, internal hosts, and dangerous redirects;
+                limit response size, timeouts, and schemes. Pydantic checks URL
+                format — not address safety.
+              </p>
+            </div>
+          </section>
+
+          <section id="fastapi-index">
+            <h2>Block 6. Indexing returns the chunk count</h2>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                Update indexing so it returns how many chunks were processed. Do
+                not use private <code>vector_store._collection.count()</code> —
+                that is Chroma internals, and the collection total is not
+                necessarily the count for this operation.
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code>def index_documents(url: str | None = None) -> int:
+    target_url = url or SOURCE_URL
+    documents = load_data(target_url)
+    chunks = text_splitter.split_documents(documents)
+
+    if not chunks:
+        return 0
+
+    vector_store.add_documents(chunks)
+    return len(chunks)</code></pre>
+            </div>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                This assumes <code>load_data</code> already returns LangChain
+                Documents, and that <code>text_splitter</code> /
+                <code>vector_store</code> exist in your project. Keep your
+                current stable-ID strategy if you already have one — otherwise
+                re-indexing can create duplicates.
+              </p>
+            </div>
+          </section>
+
+          <section id="fastapi-run">
+            <h2>Block 7. Run and test</h2>
+            <div class="cb">
+              <span class="lang">bash</span>
+              <pre><code>uvicorn main:app --reload --port 8000</code></pre>
+            </div>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                Open <code>http://127.0.0.1:8000/docs</code>. Show Try it out,
+                the request schema, and automatic validation.
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">bash</span>
+              <pre><code>curl http://127.0.0.1:8000/health
 
 curl -X POST http://127.0.0.1:8000/ask \
   -H "Content-Type: application/json" \
-  -d '{"question": "May I get a promo code for the Advanced course?"}'</code></pre>
-          </div>
-          <div class="say">
-            <b class="t">Narration</b>
-            <p>
-              You should see JSON with <code>answer</code> and
-              <code>sources</code>. Congrats — your local LLM is now available
-              over HTTP. The CLI still works with
-              <code>uv run main.py</code>; FastAPI is just another door into
-              the same graph.
-            </p>
-          </div>
-        </section>
+  -d '{"question":"What is the promo code?","top_k":3}'
+
+curl -X POST http://127.0.0.1:8000/index
+
+curl -X POST http://127.0.0.1:8000/index \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://example.com/"}' </code></pre>
+            </div>
+            <div class="say">
+              <b class="t">Narration · Errors</b>
+              <p>
+                Now send an empty question. FastAPI returns 422 before RAG runs
+                — input validation. If RAG fails during execution, the endpoint
+                returns a controlled 500. Remember: 422 means “request does not
+                match the contract”; 500 means “server could not process a valid
+                request”.
+              </p>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>When</th>
+                  <th>Example</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>200</td>
+                  <td>Success</td>
+                  <td>/health, /ask, or /index</td>
+                </tr>
+                <tr>
+                  <td>422</td>
+                  <td>Invalid input</td>
+                  <td>Empty question, top_k out of range, bad URL</td>
+                </tr>
+                <tr>
+                  <td>500</td>
+                  <td>Server execution error</td>
+                  <td>Model down or indexing failure</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="say">
+              <b class="t">Narration · Closing</b>
+              <p>
+                We now have an HTTP API, but <code>/ask</code> returns one JSON
+                only after generation finishes. That is a fine contract for many
+                jobs. If the UI should show the answer gradually, we need a
+                streaming HTTP response — that is the Advanced SSE lesson.
+              </p>
+            </div>
+            <div class="say">
+              <b class="t">Homework</b>
+              <p>
+                Add <code>top_k</code> to the schema and pass it into retrieval.
+                Confirm that 0 and 11 are rejected, while 1 and 10 are accepted.
+              </p>
+            </div>
+          </section>
+        </main>
       </div>
     </div>
-
     <div
       class="tab-panel"
       id="panel-advanced"
@@ -1732,22 +2235,364 @@ curl -X POST http://127.0.0.1:8000/ask \
       aria-labelledby="tab-advanced"
       hidden
     >
-      <div class="tab-panel-inner">
-        <h1>Advanced topics</h1>
-        <p class="lead">
-          Production RAG, evaluation, agents, and complex graphs — material for
-          the next level after the core lesson.
-        </p>
-        <section id="advanced-placeholder">
-          <div class="say">
-            <b class="t">Placeholder</b>
-            <p>
-              Advanced topics will live here. Until then, use the coupon above
-              for the full Advanced course on Udemy, or open
-              <b>LLM Agent</b> for the free RAG script.
-            </p>
+      <div class="page">
+        <aside class="toc" id="toc-advanced">
+          <div class="toc-bar">
+            <button
+              type="button"
+              id="toc-advanced-toggle"
+              aria-expanded="false"
+              aria-controls="nav-advanced"
+            >
+              Contents
+            </button>
+            <button
+              type="button"
+              id="toc-advanced-close"
+              aria-label="Close contents"
+            >
+              Close
+            </button>
           </div>
-        </section>
+          <nav id="nav-advanced" aria-label="SSE advanced sections"></nav>
+        </aside>
+        <main class="content">
+          <h1>Advanced: Server-Sent Events to the browser</h1>
+          <p class="lead">
+            Deliver generation events over HTTP. Tokens, sources, done, and
+            error — without WebSocket.
+          </p>
+          <section id="sse-goal">
+            <h2>Block 1. Lesson goal</h2>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                <strong>Goal:</strong> send generation events to the browser
+                over HTTP without changing the RAG pipeline.
+              </p>
+              <p>
+                In the FastAPI lesson the frontend got JSON when the answer was
+                ready. Now picture a chat UI: the user sends a question and text
+                starts appearing almost immediately. We do not need WebSocket
+                for one-way data. Standard HTTP streaming with Server-Sent
+                Events is enough.
+              </p>
+            </div>
+          </section>
+
+          <section id="sse-compare">
+            <h2>Block 2. SSE vs JSON vs WebSocket</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Approach</th>
+                  <th>Exchange model</th>
+                  <th>When it fits</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Plain JSON</td>
+                  <td>One request → one finished response</td>
+                  <td>Simple APIs where waiting is fine</td>
+                </tr>
+                <tr>
+                  <td>SSE</td>
+                  <td>Server → client event stream over HTTP</td>
+                  <td>Tokens, progress, notifications</td>
+                </tr>
+                <tr>
+                  <td>WebSocket</td>
+                  <td>Bidirectional persistent channel</td>
+                  <td>Interactive two-way realtime sessions</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                SSE is a text format. Events are separated by a blank line. The
+                <code>data:</code> field holds the payload; optional
+                <code>event:</code> sets the event type.
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">text</span>
+              <pre><code>event: token
+data: {"token":"Hello"}
+
+event: token
+data: {"token":" there"}
+
+event: sources
+data: {"items":["https://example.com/"]}
+
+event: done
+data: {}</code></pre>
+            </div>
+          </section>
+
+          <section id="sse-endpoint">
+            <h2>Block 3. Add POST /stream</h2>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                Add imports, then implement the endpoint. As in the CLI lesson,
+                stream <code>messages</code> and <code>updates</code> together
+                so retrieval does not run twice.
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code>import json
+from fastapi import Request
+from fastapi.responses import StreamingResponse</code></pre>
+            </div>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code>class StreamRequest(BaseModel):
+    question: str = Field(min_length=1, max_length=2000)
+    top_k: int = Field(default=3, ge=1, le=10)
+
+
+def sse_event(event: str, data: dict) -> str:
+    payload = json.dumps(data, ensure_ascii=False)
+    return f"event: {event}\ndata: {payload}\n\n"
+
+
+@app.post("/stream")
+async def stream_answer(payload: StreamRequest, request: Request):
+    async def event_generator():
+        sources: list[str] = []
+        try:
+            state = {
+                "question": payload.question,
+                "context": "",
+                "sources": [],
+                "answer": "",
+                "top_k": payload.top_k,
+            }
+
+            async for mode, chunk in rag_graph.astream(
+                state,
+                stream_mode=["messages", "updates"],
+            ):
+                if await request.is_disconnected():
+                    break
+
+                if mode == "updates":
+                    retrieve_update = chunk.get("retrieve", {})
+                    if retrieve_update:
+                        sources = retrieve_update.get("sources", sources)
+                        yield sse_event(
+                            "sources",
+                            {"items": sources},
+                        )
+
+                elif mode == "messages":
+                    message_chunk, metadata = chunk
+                    if metadata.get("langgraph_node") != "generate":
+                        continue
+
+                    content = message_chunk.content
+                    if isinstance(content, str) and content:
+                        yield sse_event("token", {"token": content})
+
+            yield sse_event("done", {})
+        except Exception:
+            # Details go to server logs; client gets a safe message only.
+            yield sse_event("error", {"message": "Generation failed"})
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
+    )</code></pre>
+            </div>
+            <div class="say">
+              <b class="t">Narration · Line by line</b>
+              <p>
+                The important part is not <code>StreamingResponse</code> itself,
+                but the event generator inside it. It runs the graph and yields
+                SSE strings. <code>token</code> carries answer chunks,
+                <code>sources</code> carries links, <code>done</code> means a
+                clean finish, <code>error</code> is a safe failure message. We
+                also check client disconnect so we stop work when the browser
+                closes the connection.
+              </p>
+            </div>
+            <div class="say">
+              <b class="t">Warning</b>
+              <p>
+                In this example <code>/stream</code> is POST with a JSON body.
+                Native browser <code>EventSource</code> only supports GET and
+                cannot set an arbitrary body. Use <code>fetch()</code> +
+                <code>ReadableStream</code> for this endpoint — or expose a GET
+                with query params if the question is short enough for a URL.
+              </p>
+            </div>
+          </section>
+
+          <section id="sse-curl">
+            <h2>Block 4. Test the stream from the terminal</h2>
+            <div class="cb">
+              <span class="lang">bash</span>
+              <pre><code>curl -N -X POST http://127.0.0.1:8000/stream \
+  -H "Content-Type: application/json" \
+  -d '{"question":"What is the promo code?","top_k":3}' </code></pre>
+            </div>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                The <code>-N</code> flag disables curl output buffering so
+                events appear immediately.
+              </p>
+            </div>
+          </section>
+
+          <section id="sse-browser">
+            <h2>Block 5. Browser client with fetch + ReadableStream</h2>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                Teaching snippet for a page with <code>#question</code>,
+                <code>#send</code>, <code>#answer</code>, and
+                <code>#sources</code>. In production prefer a real SSE parser —
+                network chunk boundaries need not match event boundaries.
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">javascript</span>
+              <pre><code>const answerEl = document.querySelector("#answer");
+const sourcesEl = document.querySelector("#sources");
+
+async function askWithStream(question) {
+  answerEl.textContent = "";
+  sourcesEl.textContent = "";
+
+  const response = await fetch("http://127.0.0.1:8000/stream", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ question, top_k: 3 }),
+  });
+
+  if (!response.ok || !response.body) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+
+  const reader = response.body
+    .pipeThrough(new TextDecoderStream())
+    .getReader();
+
+  let buffer = "";
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+
+    buffer += value;
+    const events = buffer.split("\n\n");
+    buffer = events.pop() ?? "";
+
+    for (const rawEvent of events) {
+      const eventName = rawEvent.match(/^event: (.+)$/m)?.[1];
+      const dataLine = rawEvent.match(/^data: (.+)$/m)?.[1];
+      if (!eventName || !dataLine) continue;
+
+      const data = JSON.parse(dataLine);
+
+      if (eventName === "token") {
+        answerEl.textContent += data.token;
+      } else if (eventName === "sources") {
+        sourcesEl.textContent = data.items.join("\n");
+      } else if (eventName === "error") {
+        throw new Error(data.message);
+      } else if (eventName === "done") {
+        console.log("Stream completed");
+      }
+    }
+  }
+}</code></pre>
+            </div>
+            <div class="say">
+              <b class="t">Narration · Demo</b>
+              <p>
+                Show curl first: the server sends separate events. Then show the
+                browser: text accumulates in the answer element, links arrive as
+                their own event. Emphasize: this is not WebSocket and not
+                frontend-framework magic — it is a normal HTTP response the
+                server keeps writing to.
+              </p>
+            </div>
+          </section>
+
+          <section id="sse-production">
+            <h2>Block 6. Production notes and closing</h2>
+            <ul>
+              <li>
+                <strong>Disconnect:</strong> stop generation when the client
+                leaves; check how your LangGraph/backend version cancels the
+                task.
+              </li>
+              <li>
+                <strong>Proxy buffering:</strong> reverse proxies may buffer;
+                configure them for SSE. <code>X-Accel-Buffering: no</code> helps
+                with Nginx.
+              </li>
+              <li>
+                <strong>Timeouts:</strong> align app, proxy, and client
+                timeouts.
+              </li>
+              <li>
+                <strong>Errors:</strong> after streaming starts you cannot
+                reliably change the HTTP status — send an <code>error</code> SSE
+                event.
+              </li>
+              <li>
+                <strong>Auth / CORS:</strong> configure them if frontend and API
+                are on different origins.
+              </li>
+              <li>
+                <strong>EventSource:</strong> auto-reconnects, but that does not
+                appear automatically with fetch — the fetch client must decide
+                about retries.
+              </li>
+            </ul>
+            <div class="say">
+              <b class="t">Narration · Course closing</b>
+              <p>
+                We went from a local RAG script to an HTTP API with streaming
+                generation. The key engineering idea is layering: LangGraph
+                reports execution events, FastAPI defines the HTTP contract, SSE
+                delivers events to the browser. You no longer have only a chat
+                script — you have a basic backend you can attach to a UI.
+              </p>
+            </div>
+            <div class="say">
+              <b class="t">Bonus homework</b>
+              <p>
+                Add a Stop button that cancels the fetch with
+                <code>AbortController</code>, and show a clear “connection
+                aborted” state.
+              </p>
+            </div>
+            <div class="say">
+              <b class="t">Teacher checklist</b>
+              <p>
+                Student can explain <code>values</code> / <code>updates</code> /
+                <code>messages</code>; filter tokens by
+                <code>langgraph_node == "generate"</code>; collect sources from
+                <code>retrieve</code> updates without a second search; stream
+                tokens in the CLI; validate <code>/ask</code>; run
+                <code>/stream</code> with <code>curl -N</code>; explain why
+                fetch is needed for POST streaming.
+              </p>
+            </div>
+          </section>
+        </main>
       </div>
     </div>
 
@@ -1757,21 +2602,25 @@ curl -X POST http://127.0.0.1:8000/ask \
           document.querySelectorAll('.course-tabs [role="tab"]'),
         );
         var panels = {
+          home: document.getElementById("panel-home"),
           basics: document.getElementById("panel-basics"),
           agent: document.getElementById("panel-agent"),
+          streams: document.getElementById("panel-streams"),
           fastapi: document.getElementById("panel-fastapi"),
           advanced: document.getElementById("panel-advanced"),
         };
         var validTabs = {
+          home: true,
           basics: true,
           agent: true,
+          streams: true,
           fastapi: true,
           advanced: true,
         };
 
         function activateTab(name, opts) {
           opts = opts || {};
-          if (!validTabs[name]) name = "agent";
+          if (!validTabs[name]) name = "home";
           tabButtons.forEach(function (btn) {
             var on = btn.getAttribute("data-tab") === name;
             btn.setAttribute("aria-selected", on ? "true" : "false");
@@ -1792,12 +2641,16 @@ curl -X POST http://127.0.0.1:8000/ask \
           if (opts.scroll) {
             window.scrollTo(0, 0);
           }
+          if (name === "home") {
+            playHomeMotion();
+          }
         }
 
         function tabFromHash() {
           var h = (location.hash || "").replace(/^#/, "");
           if (h.indexOf("tab-") === 0) {
             var name = h.slice(4);
+            if (name === "cli") name = "streams";
             if (validTabs[name]) return name;
           }
           return null;
@@ -1831,8 +2684,7 @@ curl -X POST http://127.0.0.1:8000/ask \
             else if (e.key === "End") i = tabButtons.length - 1;
             else if (e.key === "ArrowLeft")
               i = (i - 1 + tabButtons.length) % tabButtons.length;
-            else if (e.key === "ArrowRight")
-              i = (i + 1) % tabButtons.length;
+            else if (e.key === "ArrowRight") i = (i + 1) % tabButtons.length;
             tabButtons[i].focus();
             activateTab(tabButtons[i].getAttribute("data-tab"), {
               updateHash: true,
@@ -1845,37 +2697,105 @@ curl -X POST http://127.0.0.1:8000/ask \
           if (name) activateTab(name, { scroll: true });
         });
 
+        document.querySelectorAll("[data-go-tab]").forEach(function (el) {
+          el.addEventListener("click", function () {
+            activateTab(el.getAttribute("data-go-tab"), {
+              updateHash: true,
+              scroll: true,
+            });
+          });
+        });
+
+        var homeHero = document.querySelector(".home-hero");
+        var homeStackWords = homeHero
+          ? Array.prototype.slice.call(
+              homeHero.querySelectorAll(".home-stack-word"),
+            )
+          : [];
+        var homeStackTimer = null;
+        var homeStackIndex = 0;
+        var homeMotionPlayed = false;
+        var prefersReducedMotion = window.matchMedia(
+          "(prefers-reduced-motion: reduce)",
+        ).matches;
+
+        function cycleHomeStack() {
+          if (prefersReducedMotion || homeStackWords.length < 2) return;
+          homeStackWords[homeStackIndex].classList.remove("is-active");
+          homeStackIndex = (homeStackIndex + 1) % homeStackWords.length;
+          homeStackWords[homeStackIndex].classList.add("is-active");
+        }
+
+        function startHomeStack() {
+          if (homeStackTimer || prefersReducedMotion) return;
+          homeStackTimer = window.setInterval(cycleHomeStack, 2200);
+        }
+
+        function playHomeMotion() {
+          if (!homeHero) return;
+          startHomeStack();
+          if (prefersReducedMotion || homeMotionPlayed) {
+            homeHero.removeAttribute("data-motion");
+            return;
+          }
+          homeMotionPlayed = true;
+          homeHero.setAttribute("data-motion", "pending");
+          window.requestAnimationFrame(function () {
+            window.requestAnimationFrame(function () {
+              homeHero.setAttribute("data-motion", "play");
+            });
+          });
+        }
+
         var initialTab = tabFromHash();
-        activateTab(initialTab || "agent", { scroll: false });
+        activateTab(initialTab || "home", { scroll: false });
       })();
 
-      (function () {
-        var nav = document.getElementById("nav");
-        var toc = document.getElementById("toc");
-        var toggle = document.getElementById("toc-toggle");
-        var closeBtn = document.getElementById("toc-close");
+      function initSectionToc(opts) {
+        var nav = document.getElementById(opts.navId);
+        var toc = document.getElementById(opts.tocId);
+        var toggle = document.getElementById(opts.toggleId);
+        var closeBtn = document.getElementById(opts.closeId);
+        var panel = document.getElementById(opts.panelId);
+        if (!nav || !toc || !toggle || !closeBtn || !panel) return;
+
         var sections = [];
         var links = [];
 
-        document
-          .querySelectorAll("#panel-agent main.content > section")
-          .forEach(function (s) {
-            var h2 = s.querySelector("h2");
-            if (!h2 || !s.id) return;
-            sections.push(s);
-            var fullTitle = h2.textContent.trim();
-            var label = fullTitle.split(".")[0];
-            var a = document.createElement("a");
-            a.href = "#" + s.id;
-            a.textContent = label;
-            if (label !== fullTitle) a.title = fullTitle;
-            a.setAttribute("aria-label", fullTitle);
-            nav.appendChild(a);
-            links.push(a);
-            a.addEventListener("click", function () {
-              closeToc();
-            });
+        panel.querySelectorAll("main.content > section").forEach(function (s) {
+          var h2 = s.querySelector("h2");
+          if (!h2 || !s.id) return;
+          sections.push(s);
+          var fullTitle = h2.textContent.trim().replace(/\s+/g, " ");
+          var parsed = fullTitle.match(
+            /^((?:Block|Lesson)\s+\d+|\d+)\.\s*(.+)$/i,
+          );
+          var label = parsed ? parsed[1] : fullTitle;
+          var desc = parsed ? parsed[2] : "";
+          var a = document.createElement("a");
+          a.href = "#" + s.id;
+          a.setAttribute("aria-label", fullTitle);
+          a.title = fullTitle;
+          var labelEl = document.createElement("span");
+          labelEl.className = "toc-label";
+          labelEl.textContent = label;
+          a.appendChild(labelEl);
+          if (desc) {
+            var descEl = document.createElement("span");
+            descEl.className = "toc-desc";
+            descEl.textContent = desc;
+            a.appendChild(descEl);
+          }
+          nav.appendChild(a);
+          links.push(a);
+          a.addEventListener("click", function () {
+            closeToc();
           });
+        });
+
+        function panelActive() {
+          return !panel.hasAttribute("hidden");
+        }
 
         function setCurrent(id) {
           links.forEach(function (a) {
@@ -1888,7 +2808,7 @@ curl -X POST http://127.0.0.1:8000/ask \
         }
 
         function pickCurrent() {
-          if (!sections.length) return;
+          if (!sections.length || !panelActive()) return;
           var y = window.scrollY + Math.min(160, window.innerHeight * 0.25);
           var current = sections[0];
           for (var i = 0; i < sections.length; i++) {
@@ -1907,6 +2827,7 @@ curl -X POST http://127.0.0.1:8000/ask \
           var visible = {};
           var io = new IntersectionObserver(
             function (entries) {
+              if (!panelActive()) return;
               entries.forEach(function (e) {
                 visible[e.target.id] = e.isIntersecting
                   ? e.intersectionRatio
@@ -1925,7 +2846,6 @@ curl -X POST http://127.0.0.1:8000/ask \
                 pickCurrent();
                 return;
               }
-              // Prefer the uppermost intersecting section in the top band
               var topBand = window.scrollY + window.innerHeight * 0.35;
               var chosen = best;
               for (var i = 0; i < sections.length; i++) {
@@ -1976,7 +2896,36 @@ curl -X POST http://127.0.0.1:8000/ask \
         document.addEventListener("keydown", function (e) {
           if (e.key === "Escape") closeToc();
         });
-      })();
+      }
+
+      initSectionToc({
+        panelId: "panel-agent",
+        tocId: "toc",
+        navId: "nav",
+        toggleId: "toc-toggle",
+        closeId: "toc-close",
+      });
+      initSectionToc({
+        panelId: "panel-streams",
+        tocId: "toc-streams",
+        navId: "nav-streams",
+        toggleId: "toc-streams-toggle",
+        closeId: "toc-streams-close",
+      });
+      initSectionToc({
+        panelId: "panel-fastapi",
+        tocId: "toc-fastapi",
+        navId: "nav-fastapi",
+        toggleId: "toc-fastapi-toggle",
+        closeId: "toc-fastapi-close",
+      });
+      initSectionToc({
+        panelId: "panel-advanced",
+        tocId: "toc-advanced",
+        navId: "nav-advanced",
+        toggleId: "toc-advanced-toggle",
+        closeId: "toc-advanced-close",
+      });
 
       function wireCopyButton(btn, getText) {
         if (!btn) return;

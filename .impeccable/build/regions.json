@@ -1,0 +1,35 @@
+{
+  "allowUncovered": true,
+  "regions": [
+    {
+      "id": "title",
+      "kind": "text",
+      "grid": "B2:H4",
+      "note": "Centered display title Build a local RAG system"
+    },
+    {
+      "id": "stack",
+      "kind": "text",
+      "grid": "C4:G5",
+      "note": "Blue stack line LangChain LangGraph Chroma Ollama"
+    },
+    {
+      "id": "lead",
+      "kind": "text",
+      "grid": "C5:G6",
+      "note": "Mute supporting sentence about spoken-video script"
+    },
+    {
+      "id": "cta",
+      "kind": "control",
+      "grid": "D6:F7",
+      "note": "Primary pill CTA Start with LLM Agent"
+    },
+    {
+      "id": "path",
+      "kind": "control",
+      "grid": "C8:G9",
+      "note": "Secondary module path Streams CLI FastAPI SSE"
+    }
+  ]
+}

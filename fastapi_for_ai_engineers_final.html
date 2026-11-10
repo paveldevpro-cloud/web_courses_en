@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FastAPI for AI Engineers — Streaming & RAG</title>
+<style>
+:root{--bg:#0b1020;--panel:#111a2e;--panel2:#17233b;--text:#e8eefc;--muted:#a9b6d0;--line:#2a3957;--accent:#79a9ff;--green:#70d6ad;--amber:#f2c879;--code:#080d18}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:88px}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.65 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
+a{color:var(--accent)}code{font: .92em ui-monospace,SFMono-Regular,Consolas,monospace;background:#202d47;padding:.12em .35em;border-radius:5px;color:#c8dcff}
+.top{position:sticky;top:0;z-index:10;background:#0b1020ed;backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:13px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{font-weight:750;letter-spacing:.01em}.brand span{color:var(--accent)}.top small{color:var(--muted)}
+.layout{display:grid;grid-template-columns:265px minmax(0,1fr);max-width:1500px;margin:auto}
+aside{position:sticky;top:65px;height:calc(100vh - 65px);overflow:auto;padding:25px 16px 35px 22px;border-right:1px solid var(--line)}
+aside .navtitle{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:#8292b3;margin:20px 0 8px}
+aside a{display:block;color:var(--muted);text-decoration:none;padding:8px 10px;border-radius:8px;font-size:14px}
+aside a:hover,aside a.active{background:var(--panel2);color:var(--text)}
+main{min-width:0;padding:36px clamp(20px,4vw,64px) 90px;max-width:1120px}
+.hero{padding:34px;border:1px solid var(--line);border-radius:22px;background:radial-gradient(ellipse at 85% 0%,#294b7a66,transparent 45%),linear-gradient(145deg,#15233b,#10182a);margin-bottom:30px}
+.eyebrow{color:var(--green);text-transform:uppercase;letter-spacing:.13em;font-size:12px;font-weight:700}
+h1{font-size:clamp(30px,4vw,48px);line-height:1.1;margin:12px 0}h2{font-size:29px;line-height:1.2;margin:0 0 18px}h3{font-size:20px;margin:28px 0 10px}h4{margin:0 0 8px}
+.lead{font-size:18px;color:#c5d1e8;max-width:800px}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}.pill{border:1px solid #405578;border-radius:999px;padding:5px 11px;color:#c8d7f3;font-size:12px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 30px;border-bottom:1px solid var(--line);padding-bottom:12px}
+.tab{border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:10px 15px;border-radius:10px;cursor:pointer;font:inherit}
+.tab[aria-selected=true]{background:#243a5e;color:white;border-color:#628bd0}
+.panel{display:none}.panel.active{display:block}
+section.lesson{padding:28px 0;border-bottom:1px solid var(--line);scroll-margin-top:85px}
+section.lesson:first-child{padding-top:4px}
+.kicker{color:var(--green);font-size:12px;font-weight:750;text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px}
+p{margin:10px 0;color:#d0d9eb}ul,ol{padding-left:24px;color:#d0d9eb}li{margin:6px 0}
+.callout{border:1px solid var(--line);background:var(--panel);border-left:3px solid var(--accent);border-radius:10px;padding:15px 18px;margin:16px 0}
+.callout.good{border-left-color:var(--green)}.callout.warn{border-left-color:var(--amber)}
+.callout strong{color:#fff}.say{margin:14px 0;padding:15px 18px;background:#132039;border:1px solid #263b5c;border-radius:11px}
+.say b{display:block;color:var(--green);font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.say p{margin:0;color:#d9e3f5}
+pre{background:var(--code);border:1px solid #24334d;border-radius:12px;padding:17px;overflow:auto;line-height:1.5;font-size:13px;color:#dce7fb;tab-size:4}
+pre code{background:none;padding:0;color:inherit}.codehead{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px;margin:17px 0 0}
+.copy{border:1px solid var(--line);background:var(--panel2);color:#dce7fb;border-radius:7px;padding:5px 9px;cursor:pointer}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}th,td{text-align:left;padding:11px;border-bottom:1px solid var(--line);vertical-align:top}th{color:#a9c4f2;font-weight:650}
+.flow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}.flow div{background:var(--panel);border:1px solid var(--line);padding:14px;border-radius:10px}.flow b{color:var(--accent);display:block}
+.anchorlist{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.anchorlist a{font-size:13px;text-decoration:none;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 10px}
+footer{padding:30px 0;color:var(--muted);font-size:13px}
+@media(max-width:850px){.layout{display:block}aside{position:relative;top:auto;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:10px 16px;display:flex;gap:5px;overflow-x:auto}aside .navtitle{display:none}aside a{white-space:nowrap}main{padding:24px 18px 70px}.top small{display:none}.flow{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="top"><div class="brand">AI ENGINEERING <span>/ FIELD NOTES</span></div><small>Практический курс · один файл main.py · от CLI к HTTP streaming</small></header>
+<div class="layout">
+<aside aria-label="Навигация по курсу">
+<div class="navtitle">Курс</div>
+<a href="#overview">Обзор</a><a href="#lesson1">01 · LangGraph streams</a><a href="#lesson2">02 · CLI streaming</a><a href="#lesson3">03 · FastAPI</a><a href="#bonus">Бонус · SSE</a><a href="#final-code">Сборка main.py</a><a href="#checklist">Чек-лист</a>
+</aside>
+<main>
+<div class="hero" id="overview">
+<div class="eyebrow">FastAPI for AI Engineers</div>
+<h1>От RAG-скрипта к streaming API</h1>
+<p class="lead">Сначала разберём, какие события выдаёт LangGraph. Затем добавим потоковую генерацию в CLI, обернём существующий RAG в FastAPI и в бонусе доставим токены в браузер через Server-Sent Events.</p>
+<div class="pills"><span class="pill">LangGraph</span><span class="pill">LangChain</span><span class="pill">Ollama / OpenAI-compatible</span><span class="pill">FastAPI + Pydantic</span><span class="pill">SSE</span><span class="pill">Intermediate</span></div>
+</div>
+<div class="tabs" role="tablist" aria-label="Разделы курса">
+<button class="tab" role="tab" aria-selected="true" aria-controls="p-course" id="t-course">Программа</button>
+<button class="tab" role="tab" aria-selected="false" aria-controls="p-code" id="t-code">Код и архитектура</button>
+<button class="tab" role="tab" aria-selected="false" aria-controls="p-practice" id="t-practice">Практика и проверка</button>
+</div>
+
+<div class="panel active" id="p-course" role="tabpanel" aria-labelledby="t-course">
+<section class="lesson">
+<div class="kicker">Карта курса</div><h2>Четыре занятия, один развивающийся проект</h2>
+<table><thead><tr><th>Часть</th><th>Что делаем</th><th>Результат для ученика</th></tr></thead><tbody>
+<tr><td>Урок 1</td><td>Режимы <code>values</code>, <code>updates</code>, <code>messages</code></td><td>Понимает, какие события выдаёт граф и для какой задачи нужен каждый режим</td></tr>
+<tr><td>Урок 2</td><td>Асинхронный streaming в CLI</td><td>Видит токены и sources без повторного retrieval</td></tr>
+<tr><td>Урок 3</td><td>FastAPI + Pydantic в том же <code>main.py</code></td><td>Получает <code>/health</code>, <code>/ask</code>, <code>/index</code> и Swagger docs</td></tr>
+<tr><td>Бонус</td><td>SSE поверх HTTP</td><td>Отображает ответ в браузере по мере генерации</td></tr>
+</tbody></table>
+<div class="say"><b>Нарратив открытия курса</b><p>Представьте, что наш RAG уже работает: он загружает страницу, разбивает её на фрагменты, сохраняет embeddings и отвечает на вопросы. Но пока это инструмент разработчика — запускается из терминала и возвращает ответ только целиком. В этом мини-проекте мы не будем переписывать RAG. Мы добавим ему три способа общения с внешним миром: наблюдение за графом, потоковый вывод в CLI и HTTP API. В финале браузер начнёт получать ответ по частям.</p></div>
+<div class="callout good"><strong>Правило проекта:</strong> продолжаем работать в одном файле <code>main.py</code>. Не создаём отдельные <code>schemas.py</code>, <code>server.py</code> и <code>inspect_stream.py</code>. Так ученик видит эволюцию одного приложения, а не тратит время на перемещение кода.</div>
+</section>
+
+<section class="lesson" id="lesson1">
+<div class="kicker">Урок 01 · 20–25 минут</div><h2>Понимаем streaming в LangGraph</h2>
+<p><strong>Цель:</strong> научиться выбирать правильный режим стриминга, а не просто запомнить названия.</p>
+<div class="say"><b>Сценарий / hook</b><p>Когда вы вызываете граф обычным <code>invoke()</code>, вы получаете результат в конце. Но во время выполнения внутри графа уже происходят полезные события: retrieval нашёл документы, узел обновил состояние, модель начала генерировать текст. Вопрос не в том, «умеет ли граф стримить», а в том, какие именно события нам нужны.</p></div>
+<h3>1. Три режима на одной схеме</h3>
+<div class="flow"><div><b>values</b>Полное состояние графа после выполнения шага</div><div><b>updates</b>Только изменения, возвращённые узлом</div><div><b>messages</b>Фрагменты сообщений модели + metadata</div></div>
+<p>Покажите одну и ту же RAG-сессию тремя способами. Важно: <code>values</code> не следует описывать как обязательную выдачу первоначального пустого state. Он показывает состояние после шагов графа.</p>
+<h3>2. Добавляем инспектор прямо в main.py</h3>
+<p>В конец существующего <code>main.py</code> временно добавьте функцию ниже. Она не требует нового файла и позволяет переключать режим одной переменной.</p>
+<div class="codehead"><span>Python · демонстрация урока 1</span><button class="copy">Копировать</button></div>
+<pre><code>import asyncio
+
+async def inspect_stream(question: str, mode: str = "updates") -&gt; None:
+    initial_state = {
+        "question": question,
+        "context": "",
+        "sources": [],
+        "answer": "",
+    }
+
+    async for event in rag_graph.astream(
+        initial_state,
+        stream_mode=mode,
+    ):
+        print(f"\\n--- {mode} ---")
+        print(event)
+
+# Запустить из временного блока или интерактивной консоли:
+# asyncio.run(inspect_stream("What is the promo code?", "values"))
+# asyncio.run(inspect_stream("What is the promo code?", "updates"))
+# asyncio.run(inspect_stream("What is the promo code?", "messages"))</code></pre>
+<div class="say"><b>Нарратив / values</b><p>Начнём с <code>values</code>. Представьте это как снимок всей рабочей памяти агента после очередного шага: вопрос, контекст, sources и, когда генерация завершится, ответ. Такой режим удобен, когда мы хотим понять, как меняется состояние целиком.</p></div>
+<div class="say"><b>Нарратив / updates</b><p>Теперь <code>updates</code>. Это уже не полный снимок, а квитанция о том, что изменил конкретный узел. Для RAG это особенно удобно: мы можем увидеть, что именно вернул <code>retrieve</code>, а затем отдельно — что добавил <code>generate</code>. Меньше шума, если нас интересуют изменения.</p></div>
+<div class="say"><b>Нарратив / messages</b><p>И наконец <code>messages</code>. Здесь мы получаем кусочки сообщений модели вместе с метаданными. В метаданных есть <code>langgraph_node</code>, поэтому можно отличить текст, произведённый узлом <code>generate</code>, от сообщений других узлов. Именно этот режим поможет показать пользователю ответ по мере генерации.</p></div>
+<div class="codehead"><span>Python · чтение messages</span><button class="copy">Копировать</button></div>
+<pre><code>async def inspect_messages(question: str) -&gt; None:
+    state = {
+        "question": question,
+        "context": "",
+        "sources": [],
+        "answer": "",
+    }
+    async for chunk, metadata in rag_graph.astream(
+        state,
+        stream_mode="messages",
+    ):
+        if chunk.content:
+            print(
+                repr(chunk.content),
+                "| node =",
+                metadata.get("langgraph_node"),
+            )</code></pre>
+<div class="callout"><strong>Точность терминов.</strong> В LangGraph есть и другие режимы, включая <code>custom</code> и <code>debug</code>. В этом уроке фокусируемся на трёх наиболее полезных для нашего RAG-приложения. Это учебный выбор, а не полный список возможностей.</div>
+<h3>3. Сравнение и переход к следующему уроку</h3>
+<table><thead><tr><th>Режим</th><th>Что получаем</th><th>Типичный сценарий</th></tr></thead><tbody><tr><td><code>values</code></td><td>Полное состояние после шага</td><td>Отладка потока данных</td></tr><tr><td><code>updates</code></td><td>Изменения отдельных узлов</td><td>Логи, сбор sources, статус этапов</td></tr><tr><td><code>messages</code></td><td>Фрагменты сообщений и metadata</td><td>Потоковый вывод текста модели</td></tr></tbody></table>
+<div class="say"><b>Финальная подводка</b><p>Теперь мы знаем, что <code>messages</code> отвечает за фрагменты текста, а <code>updates</code> может сообщить нам, что нашёл retrieval. В следующем уроке объединим эти два потока: пользователь увидит текст сразу, а sources мы сохраним из того же запуска графа. Это важно — не будем выполнять поиск второй раз только ради ссылок.</p></div>
+<p><strong>Домашнее задание:</strong> выведите только изменения узла <code>retrieve</code> из <code>updates</code>. Найдите в событии поля <code>context</code> и <code>sources</code>.</p>
+</section>
+
+<section class="lesson" id="lesson2">
+<div class="kicker">Урок 02 · 25–30 минут</div><h2>Потоковый ответ RAG в CLI</h2>
+<p><strong>Цель:</strong> сделать асинхронную функцию, которая печатает токены по мере поступления и собирает sources в том же запуске графа.</p>
+<div class="say"><b>Сценарий / hook</b><p>Сравним два пользовательских опыта. В первом человек нажимает Enter и несколько секунд смотрит на пустой терминал. Во втором сразу появляется текст: «The promo code…». Полное время генерации может быть тем же, но воспринимаемая задержка ниже — пользователь видит, что система работает.</p></div>
+<h3>1. Проверьте поддержку streaming на стороне модели</h3>
+<p>Для OpenAI-compatible клиента LangChain streaming обычно включается параметром <code>streaming=True</code>, но это не универсальный переключатель, гарантирующий поток от любого backend. Убедитесь, что выбранная модель и endpoint Ollama/OpenAI-compatible действительно поддерживают streaming и что ваша версия интеграции корректно передаёт stream-запрос.</p>
+<div class="codehead"><span>Python · конфигурация модели</span><button class="copy">Копировать</button></div>
+<pre><code>llm = ChatOpenAI(
+    model=os.getenv("CHAT_MODEL", "llama3.1"),
+    base_url=os.getenv("LLM_API_BASE", "http://127.0.0.1:11434/v1"),
+    api_key=os.getenv("LLM_API_KEY", "ollama"),
+    temperature=0,
+    streaming=True,
+)</code></pre>
+<h3>2. Собираем токены и sources за один проход</h3>
+<p>LangGraph позволяет запросить несколько режимов одновременно. При <code>stream_mode=["messages", "updates"]</code> событие содержит имя режима и соответствующую полезную нагрузку. Ниже используем этот формат явно.</p>
+<div class="codehead"><span>Python · streaming helper</span><button class="copy">Копировать</button></div>
+<pre><code>async def ask_question_stream(question: str) -&gt; tuple[str, list[str]]:
+    state = {
+        "question": question,
+        "context": "",
+        "sources": [],
+        "answer": "",
+    }
+    answer_parts: list[str] = []
+    sources: list[str] = []
+
+    async for mode, payload in rag_graph.astream(
+        state,
+        stream_mode=["messages", "updates"],
+    ):
+        if mode == "updates":
+            retrieve_update = payload.get("retrieve", {})
+            if retrieve_update:
+                sources = retrieve_update.get("sources", sources)
+
+        elif mode == "messages":
+            message_chunk, metadata = payload
+            if metadata.get("langgraph_node") != "generate":
+                continue
+
+            content = message_chunk.content
+            if isinstance(content, str) and content:
+                print(content, end="", flush=True)
+                answer_parts.append(content)
+
+    print()
+    return "".join(answer_parts), sources</code></pre>
+<div class="callout warn"><strong>Формат события зависит от версии.</strong> Для нескольких stream modes LangGraph возвращает пары <code>(mode, chunk)</code>. Для одного режима <code>messages</code> обычно приходит пара <code>(message_chunk, metadata)</code>. Не смешивайте эти два формата в одном цикле без проверки структуры.</div>
+<div class="say"><b>Нарратив / разбор</b><p>Смотрите, мы не вызываем <code>retrieve</code> отдельно после генерации. Когда приходит событие <code>updates</code>, забираем список источников из результата узла <code>retrieve</code>. Когда приходит <code>messages</code>, проверяем имя узла и печатаем только фрагменты от <code>generate</code>. Один запуск графа — и для текста, и для sources. Это и быстрее, и логически чище.</p></div>
+<h3>3. Подключаем функцию к CLI</h3>
+<div class="codehead"><span>Python · entry point</span><button class="copy">Копировать</button></div>
+<pre><code>if __name__ == "__main__":
+    question = input("Ask a question (or 'exit'): ").strip()
+
+    if question.lower() not in {"exit", "quit"} and question:
+        print("\\nAnswer:")
+        answer, sources = asyncio.run(
+            ask_question_stream(question)
+        )
+        print("\\nSources:")
+        for source in sources:
+            print(f"- {source}")</code></pre>
+<div class="say"><b>Нарратив / демонстрация</b><p>Запустите тот же вопрос, который использовали в предыдущем уроке. Сначала появляется ответ частями, затем список источников. Обратите внимание: CLI — это просто один из клиентов нашего RAG. Та же функция позже будет полезна для HTTP streaming, хотя в endpoint мы будем отдавать события браузеру, а не печатать их в терминал.</p></div>
+<h3>4. Измеряем не только общее время</h3>
+<p>Для более инженерной подачи введите два понятия: <strong>TTFT</strong> (time to first token) и полное время ответа. Это помогает объяснить, почему streaming улучшает UX, даже если общая генерация не стала быстрее.</p>
+<div class="codehead"><span>Python · простая телеметрия</span><button class="copy">Копировать</button></div>
+<pre><code>import time
+
+async def timed_stream(question: str) -&gt; None:
+    started = time.perf_counter()
+    first_token_at = None
+
+    state = {
+        "question": question,
+        "context": "",
+        "sources": [],
+        "answer": "",
+    }
+
+    async for chunk, metadata in rag_graph.astream(
+        state,
+        stream_mode="messages",
+    ):
+        if metadata.get("langgraph_node") != "generate":
+            continue
+        if not chunk.content:
+            continue
+
+        if first_token_at is None:
+            first_token_at = time.perf_counter()
+            print(f"\\nTTFT: {first_token_at - started:.2f}s")
+
+        print(chunk.content, end="", flush=True)
+
+    print(f"\\nTotal: {time.perf_counter() - started:.2f}s")</code></pre>
+<div class="callout"><strong>Примечание к демо:</strong> этот короткий таймер показывает TTFT от старта графа, то есть включает retrieval. Это полезная end-to-end метрика для пользователя. Если нужно измерять только задержку модели, поставьте отдельные отметки до и после retrieval.</div>
+<p><strong>Домашнее задание:</strong> сравните обычный <code>invoke()</code> и streaming по TTFT и полному времени. Запишите результаты для одного и того же вопроса.</p>
+</section>
+
+<section class="lesson" id="lesson3">
+<div class="kicker">Урок 03 · 30–35 минут</div><h2>Превращаем RAG в FastAPI приложение</h2>
+<p><strong>Цель:</strong> добавить HTTP-интерфейс и валидацию, сохранив проект в одном файле <code>main.py</code>.</p>
+<div class="say"><b>Сценарий / hook</b><p>До этого момента нашим приложением мог пользоваться только человек, запускающий Python-скрипт. Но RAG обычно нужен фронтенду, другому сервису или мобильному приложению. Им не нужно знать про Chroma, LangGraph или embeddings. Им нужен понятный HTTP контракт: отправить вопрос — получить ответ и источники. Именно этот контракт сейчас и создадим.</p></div>
+<h3>1. Установка и импорты</h3>
+<div class="codehead"><span>Terminal</span><button class="copy">Копировать</button></div>
+<pre><code>pip install "fastapi[standard]"</code></pre>
+<p>Добавьте в начало <code>main.py</code> (не дублируйте импорты, которые уже есть):</p>
+<div class="codehead"><span>Python · новые импорты</span><button class="copy">Копировать</button></div>
+<pre><code>from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field, HttpUrl
+import uvicorn</code></pre>
+<h3>2. Pydantic описывает контракт API</h3>
+<div class="codehead"><span>Python · модели запроса и ответа</span><button class="copy">Копировать</button></div>
+<pre><code>class AskRequest(BaseModel):
+    question: str = Field(
+        min_length=1,
+        max_length=2000,
+        description="Question for the RAG assistant",
+        examples=["What is the promo code?"],
+    )
+    top_k: int = Field(default=3, ge=1, le=10)
+
+
+class AskResponse(BaseModel):
+    answer: str
+    sources: list[str]
+
+
+class IndexRequest(BaseModel):
+    url: HttpUrl | None = Field(
+        default=None,
+        description="If omitted, use SOURCE_URL",
+    )
+
+
+class IndexResponse(BaseModel):
+    indexed: int
+    source: str
+
+
+class HealthResponse(BaseModel):
+    status: str = "ok"</code></pre>
+<div class="say"><b>Нарратив / объяснение</b><p>Представьте Pydantic как контроль на входе API. Если клиент пришлёт пустой вопрос, мы не хотим запускать retrieval и модель. Если попросит 500 документов, мы не хотим случайно устроить дорогой запрос. Поэтому схема ограничивает длину вопроса и диапазон <code>top_k</code>. Заодно FastAPI использует эти модели для документации в Swagger UI.</p></div>
+<h3>3. Делаем параметры RAG явными</h3>
+<p>Чтобы <code>top_k</code> из API действительно влиял на поиск, обновите функцию retrieval и узел графа. Не оставляйте число 3 жёстко зашитым внутри.</p>
+<div class="codehead"><span>Python · retrieval</span><button class="copy">Копировать</button></div>
+<pre><code>def retrieve(state: RAGState) -&gt; dict:
+    question = state["question"]
+    top_k = state.get("top_k", 3)
+
+    docs = vector_store.similarity_search(question, k=top_k)
+    context = "\\n\\n".join(doc.page_content for doc in docs)
+    sources = list(dict.fromkeys(
+        doc.metadata.get("source", "")
+        for doc in docs
+        if doc.metadata.get("source")
+    ))
+
+    return {"context": context, "sources": sources}</code></pre>
+<p>Добавьте поле в ваш TypedDict state:</p>
+<div class="codehead"><span>Python · состояние графа</span><button class="copy">Копировать</button></div>
+<pre><code>class RAGState(TypedDict):
+    question: str
+    context: str
+    sources: list[str]
+    answer: str
+    top_k: int</code></pre>
+<p>При вызове графа передавайте <code>top_k</code>. Если в текущей версии графа тип состояния объявлен иначе, добавьте поле в существующий TypedDict, не создавая второй тип.</p>
+<h3>4. FastAPI routes — в том же файле</h3>
+<div class="codehead"><span>Python · приложение и endpoints</span><button class="copy">Копировать</button></div>
+<pre><code>app = FastAPI(
+    title="RAG Agent API",
+    version="1.0.0",
+    description="A RAG assistant exposed over HTTP",
+)
+
+
+@app.get("/health", response_model=HealthResponse)
+def health() -&gt; HealthResponse:
+    return HealthResponse()
+
+
+@app.post("/ask", response_model=AskResponse)
+def ask(payload: AskRequest) -&gt; AskResponse:
+    try:
+        result = rag_graph.invoke({
+            "question": payload.question,
+            "context": "",
+            "sources": [],
+            "answer": "",
+            "top_k": payload.top_k,
+        })
+    except Exception as exc:
+        # В production логируйте подробности на сервере,
+        # но не возвращайте внутренний traceback клиенту.
+        raise HTTPException(
+            status_code=500,
+            detail="RAG request failed",
+        ) from exc
+
+    return AskResponse(
+        answer=result["answer"],
+        sources=result.get("sources", []),
+    )
+
+
+@app.post("/index", response_model=IndexResponse)
+def index(payload: IndexRequest | None = None) -&gt; IndexResponse:
+    target_url = str(payload.url) if payload and payload.url else SOURCE_URL
+    try:
+        indexed_count = index_documents(target_url)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail="Indexing failed",
+        ) from exc
+
+    return IndexResponse(
+        indexed=indexed_count,
+        source=target_url,
+    )</code></pre>
+<div class="say"><b>Нарратив / почему def</b><p>Обратите внимание: здесь обычные <code>def</code>, а не <code>async def</code>. Наши вызовы <code>rag_graph.invoke()</code> и <code>index_documents()</code> синхронные и могут блокировать выполнение. FastAPI запускает обычные path operation функции в threadpool, поэтому мы не блокируем event loop. Альтернатива — полностью асинхронный путь с <code>await rag_graph.ainvoke()</code> и async-совместимой индексацией. Не стоит писать <code>async def</code> вокруг синхронной тяжёлой функции только ради модного слова async.</p></div>
+<div class="callout warn"><strong>URL из запроса — не безобидный параметр.</strong> В учебном примере мы принимаем <code>HttpUrl</code>. В публичном production API нужно дополнительно защищаться от SSRF: запрещать localhost, private/link-local IP, внутренние домены и опасные редиректы; ограничивать размер ответа, timeout и допустимые схемы. Проверка Pydantic подтверждает формат URL, но не безопасность адреса.</div>
+<h3>5. Индексация возвращает точное число новых chunks</h3>
+<p>Обновите вашу существующую функцию индексации: она должна возвращать число обработанных chunks. Не обращайтесь к приватному <code>vector_store._collection.count()</code> — это внутренний API Chroma и общее число записей в коллекции не обязательно равно числу chunks этой операции.</p>
+<div class="codehead"><span>Python · сигнатура index_documents</span><button class="copy">Копировать</button></div>
+<pre><code>def index_documents(url: str | None = None) -&gt; int:
+    target_url = url or SOURCE_URL
+    documents = load_data(target_url)
+    chunks = text_splitter.split_documents(documents)
+
+    if not chunks:
+        return 0
+
+    vector_store.add_documents(chunks)
+    return len(chunks)</code></pre>
+<p>Этот пример предполагает, что <code>load_data</code> уже возвращает LangChain Documents, а <code>text_splitter</code> и <code>vector_store</code> созданы в вашем исходном проекте. Сохраните ваш текущий способ формирования стабильных ID, если он уже реализован: иначе повторная индексация может создавать дубликаты.</p>
+<h3>6. Запуск и тестирование</h3>
+<div class="codehead"><span>Terminal · запуск из корня проекта</span><button class="copy">Копировать</button></div>
+<pre><code>uvicorn main:app --reload --port 8000</code></pre>
+<p>Откройте <code>http://127.0.0.1:8000/docs</code>. Покажите Try it out, схему запроса и автоматическую валидацию.</p>
+<div class="codehead"><span>Terminal · health и ask</span><button class="copy">Копировать</button></div>
+<pre><code>curl http://127.0.0.1:8000/health
+
+curl -X POST http://127.0.0.1:8000/ask \\
+  -H "Content-Type: application/json" \\
+  -d '{"question":"What is the promo code?","top_k":3}'</code></pre>
+<div class="codehead"><span>Terminal · index с дефолтным URL</span><button class="copy">Копировать</button></div>
+<pre><code>curl -X POST http://127.0.0.1:8000/index</code></pre>
+<div class="codehead"><span>Terminal · index с пользовательским URL</span><button class="copy">Копировать</button></div>
+<pre><code>curl -X POST http://127.0.0.1:8000/index \\
+  -H "Content-Type: application/json" \\
+  -d '{"url":"https://example.com/"}'</code></pre>
+<div class="say"><b>Нарратив / ошибки</b><p>Теперь отправим пустой вопрос. FastAPI вернёт 422 ещё до вызова RAG — это ошибка валидации входных данных. Если сам RAG упадёт уже во время выполнения, наш endpoint вернёт контролируемый 500. Важно различать: 422 означает «запрос не соответствует контракту», а 500 — «сервер не смог обработать корректный запрос».</p></div>
+<table><thead><tr><th>Код</th><th>Когда увидим</th><th>Пример</th></tr></thead><tbody><tr><td>200</td><td>Успешная операция</td><td>Ответ /health, /ask или /index</td></tr><tr><td>422</td><td>Невалидный вход</td><td>Пустой question, top_k вне диапазона, некорректный URL</td></tr><tr><td>500</td><td>Ошибка выполнения на сервере</td><td>Недоступна модель или ошибка индексации</td></tr></tbody></table>
+<div class="say"><b>Финальная подводка</b><p>У нас теперь есть HTTP API, но endpoint <code>/ask</code> возвращает один JSON только после завершения генерации. Это абсолютно нормальный контракт для многих задач. Но если интерфейс должен показывать ответ постепенно, нам нужен потоковый HTTP-ответ. Для этого в бонусном уроке добавим SSE.</p></div>
+<p><strong>Домашнее задание:</strong> добавьте <code>top_k</code> в схему и передайте его в retrieval. Проверьте, что значения 0 и 11 отклоняются, а 1 и 10 принимаются.</p>
+</section>
+
+<section class="lesson" id="bonus">
+<div class="kicker">Бонус · 25–30 минут</div><h2>Real-time streaming через Server-Sent Events</h2>
+<p><strong>Цель:</strong> передавать события генерации в браузер через HTTP, не меняя RAG pipeline.</p>
+<div class="say"><b>Сценарий / hook</b><p>В предыдущем уроке фронтенд получил JSON, когда ответ был готов. А теперь представьте чат-интерфейс: пользователь отправил вопрос, и текст начинает появляться в окне почти сразу. Мы не будем подключать WebSocket ради одного направления данных. Здесь достаточно стандартного HTTP streaming с форматом Server-Sent Events.</p></div>
+<h3>1. SSE, JSON и WebSocket — не одно и то же</h3>
+<table><thead><tr><th>Подход</th><th>Модель обмена</th><th>Когда подходит</th></tr></thead><tbody><tr><td>Обычный JSON</td><td>Один запрос → один готовый ответ</td><td>Простые API, когда ждать завершения нормально</td></tr><tr><td>SSE</td><td>Сервер → клиент, поток событий поверх HTTP</td><td>Токены, прогресс, уведомления</td></tr><tr><td>WebSocket</td><td>Двунаправленный постоянный канал</td><td>Интерактивная связь в обе стороны, realtime-сессии</td></tr></tbody></table>
+<p>SSE — текстовый формат. Каждое событие отделяется пустой строкой. Поле <code>data:</code> содержит payload; необязательное <code>event:</code> задаёт тип события.</p>
+<div class="codehead"><span>Text · пример SSE wire format</span><button class="copy">Копировать</button></div>
+<pre><code>event: token
+data: {"token":"Hello"}
+
+event: token
+data: {"token":" there"}
+
+event: sources
+data: {"items":["https://example.com/"]}
+
+event: done
+data: {}</code></pre>
+<h3>2. Добавляем /stream в main.py</h3>
+<p>Добавьте импорты:</p>
+<div class="codehead"><span>Python · SSE imports</span><button class="copy">Копировать</button></div>
+<pre><code>import json
+from fastapi import Request
+from fastapi.responses import StreamingResponse</code></pre>
+<p>Реализуем endpoint. Как и в CLI, получаем одновременно <code>messages</code> и <code>updates</code>, чтобы не запускать retrieval второй раз.</p>
+<div class="codehead"><span>Python · SSE endpoint</span><button class="copy">Копировать</button></div>
+<pre><code>class StreamRequest(BaseModel):
+    question: str = Field(min_length=1, max_length=2000)
+    top_k: int = Field(default=3, ge=1, le=10)
+
+
+def sse_event(event: str, data: dict) -&gt; str:
+    payload = json.dumps(data, ensure_ascii=False)
+    return f"event: {event}\\ndata: {payload}\\n\\n"
+
+
+@app.post("/stream")
+async def stream_answer(payload: StreamRequest, request: Request):
+    async def event_generator():
+        sources: list[str] = []
+        try:
+            state = {
+                "question": payload.question,
+                "context": "",
+                "sources": [],
+                "answer": "",
+                "top_k": payload.top_k,
+            }
+
+            async for mode, chunk in rag_graph.astream(
+                state,
+                stream_mode=["messages", "updates"],
+            ):
+                if await request.is_disconnected():
+                    break
+
+                if mode == "updates":
+                    retrieve_update = chunk.get("retrieve", {})
+                    if retrieve_update:
+                        sources = retrieve_update.get("sources", sources)
+                        yield sse_event(
+                            "sources",
+                            {"items": sources},
+                        )
+
+                elif mode == "messages":
+                    message_chunk, metadata = chunk
+                    if metadata.get("langgraph_node") != "generate":
+                        continue
+
+                    content = message_chunk.content
+                    if isinstance(content, str) and content:
+                        yield sse_event("token", {"token": content})
+
+            yield sse_event("done", {})
+        except Exception:
+            # Подробности — в server logs, клиенту только безопасное сообщение.
+            yield sse_event("error", {"message": "Generation failed"})
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
+    )</code></pre>
+<div class="say"><b>Нарратив / построчно</b><p>Важная часть здесь — не сам <code>StreamingResponse</code>, а генератор событий внутри него. Он запускает граф и по мере поступления событий выдаёт SSE-строки. События <code>token</code> несут кусочки ответа, <code>sources</code> — найденные ссылки, <code>done</code> — штатное завершение, <code>error</code> — безопасное сообщение об ошибке. Мы также проверяем отключение клиента, чтобы не продолжать ненужную работу, когда браузер закрыл соединение.</p></div>
+<div class="callout warn"><strong>Метод и формат клиента.</strong> В примере <code>/stream</code> — POST с JSON body. Нативный браузерный <code>EventSource</code> умеет только GET и не позволяет задать произвольное тело запроса. Поэтому для этого endpoint используем <code>fetch()</code> + чтение <code>ReadableStream</code>. Альтернатива — сделать GET endpoint с query-параметрами, если вопрос короткий и допустим в URL.</div>
+<h3>3. Проверяем поток из терминала</h3>
+<div class="codehead"><span>Terminal · curl -N</span><button class="copy">Копировать</button></div>
+<pre><code>curl -N -X POST http://127.0.0.1:8000/stream \\
+  -H "Content-Type: application/json" \\
+  -d '{"question":"What is the promo code?","top_k":3}'</code></pre>
+<p>Флаг <code>-N</code> отключает буферизацию вывода curl, чтобы события отображались сразу.</p>
+<h3>4. Простой браузерный клиент на fetch + ReadableStream</h3>
+<p>Это учебный фрагмент для страницы с элементами <code>#question</code>, <code>#send</code>, <code>#answer</code> и <code>#sources</code>. Для production лучше использовать полноценный SSE parser, потому что границы сетевых чанков не обязаны совпадать с границами событий.</p>
+<div class="codehead"><span>JavaScript · браузерный клиент</span><button class="copy">Копировать</button></div>
+<pre><code>const answerEl = document.querySelector("#answer");
+const sourcesEl = document.querySelector("#sources");
+
+async function askWithStream(question) {
+  answerEl.textContent = "";
+  sourcesEl.textContent = "";
+
+  const response = await fetch("http://127.0.0.1:8000/stream", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ question, top_k: 3 }),
+  });
+
+  if (!response.ok || !response.body) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+
+  const reader = response.body
+    .pipeThrough(new TextDecoderStream())
+    .getReader();
+
+  let buffer = "";
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+
+    buffer += value;
+    const events = buffer.split("\\n\\n");
+    buffer = events.pop() ?? "";
+
+    for (const rawEvent of events) {
+      const eventName = rawEvent.match(/^event: (.+)$/m)?.[1];
+      const dataLine = rawEvent.match(/^data: (.+)$/m)?.[1];
+      if (!eventName || !dataLine) continue;
+
+      const data = JSON.parse(dataLine);
+
+      if (eventName === "token") {
+        answerEl.textContent += data.token;
+      } else if (eventName === "sources") {
+        sourcesEl.textContent = data.items.join("\\n");
+      } else if (eventName === "error") {
+        throw new Error(data.message);
+      } else if (eventName === "done") {
+        console.log("Stream completed");
+      }
+    }
+  }
+}</code></pre>
+<div class="say"><b>Нарратив / демонстрация</b><p>Покажите сначала curl: видно, что сервер отправляет отдельные события. Затем покажите браузер: текст накапливается в элементе ответа, а ссылки появляются отдельным событием. Подчеркните, что это не WebSocket и не магия фронтенд-фреймворка — это обычный HTTP response, который сервер не закрывает сразу, а постепенно дописывает.</p></div>
+<h3>5. Production notes — коротко, без ухода в отдельный курс</h3>
+<ul><li><strong>Disconnect:</strong> прекращайте генерацию, если клиент отключился; проверьте, как конкретная версия LangGraph/backend отменяет задачу.</li><li><strong>Proxy buffering:</strong> reverse proxy может буферизовать ответ; настройте его для SSE. Заголовок <code>X-Accel-Buffering: no</code> помогает в окружениях с Nginx.</li><li><strong>Timeouts:</strong> согласуйте таймауты приложения, прокси и клиента.</li><li><strong>Errors:</strong> после начала streaming HTTP status уже нельзя надёжно изменить; отправляйте отдельное SSE-событие <code>error</code>.</li><li><strong>Auth/CORS:</strong> настройте их, если frontend и API находятся на разных origin.</li><li><strong>EventSource:</strong> автоматически переподключается, но это поведение не появляется автоматически при использовании fetch; fetch-клиент должен сам решать, нужен ли retry.</li></ul>
+<div class="say"><b>Финальное завершение курса</b><p>Мы прошли путь от локального RAG-скрипта до HTTP API с потоковой генерацией. Главное инженерное решение — разделять уровни: LangGraph сообщает о событиях выполнения, FastAPI определяет HTTP-контракт, а SSE доставляет события браузеру. Теперь у вас не просто чат-скрипт, а базовый backend, который можно подключить к интерфейсу.</p></div>
+<p><strong>Бонусное задание:</strong> добавьте кнопку Stop, которая отменяет fetch-запрос через <code>AbortController</code>, и покажите пользователю отдельное состояние «соединение прервано».</p>
+</section>
+</div>
+
+<div class="panel" id="p-code" role="tabpanel" aria-labelledby="t-code">
+<section class="lesson" id="final-code">
+<div class="kicker">Сборка проекта</div><h2>Как должен выглядеть итоговый main.py</h2>
+<p>Курс развивает исходный файл постепенно. Чтобы ученику было легко ориентироваться, держите в нём логические секции в таком порядке:</p>
+<ol>
+<li><strong>Imports и configuration</strong> — dotenv, env vars, клиенты модели и embeddings.</li>
+<li><strong>Loading and chunking</strong> — загрузка страницы, очистка HTML, text splitter.</li>
+<li><strong>Vector store</strong> — Chroma и функция <code>index_documents(url) -&gt; int</code>.</li>
+<li><strong>RAG state and nodes</strong> — TypedDict, <code>retrieve</code>, <code>generate</code>.</li>
+<li><strong>Graph construction</strong> — сборка и компиляция <code>rag_graph</code>.</li>
+<li><strong>CLI helpers</strong> — обычный ответ и streaming CLI (оставить один выбранный интерфейс запуска).</li>
+<li><strong>Pydantic models</strong> — request/response схемы.</li>
+<li><strong>FastAPI app and routes</strong> — <code>/health</code>, <code>/ask</code>, <code>/index</code>.</li>
+<li><strong>SSE</strong> — <code>sse_event</code> и <code>/stream</code>.</li>
+<li><strong>Entry point</strong> — запуск CLI или сервера в зависимости от выбранного режима.</li>
+</ol>
+<div class="callout warn"><strong>Важное замечание о запуске.</strong> Для команды <code>uvicorn main:app</code> модуль <code>main.py</code> импортируется как приложение. Не запускайте CLI-интерактивный код безусловно при импорте. Поместите его под <code>if __name__ == "__main__":</code>, а сервер запускайте командой Uvicorn. Не вызывайте <code>uvicorn.run()</code> при каждом импорте модуля.</div>
+<h3>Удобный шаблон entry point</h3>
+<div class="codehead"><span>Python · самый нижний блок файла</span><button class="copy">Копировать</button></div>
+<pre><code>if __name__ == "__main__":
+    # Локальный CLI режим. Для API используйте:
+    # uvicorn main:app --reload --port 8000
+    question = input("Ask a question (or 'exit'): ").strip()
+    if question and question.lower() not in {"exit", "quit"}:
+        asyncio.run(ask_question_stream(question))</code></pre>
+<p>Если хотите сохранить обе возможности, добавьте CLI-аргумент вроде <code>--cli</code>, а по умолчанию не запускайте интерактивный ввод. В уроке достаточно показать разделение импорта приложения и локального запуска.</p>
+</section>
+</div>
+
+<div class="panel" id="p-practice" role="tabpanel" aria-labelledby="t-practice">
+<section class="lesson" id="checklist">
+<div class="kicker">Материалы преподавателя</div><h2>Проверка качества и методические правки</h2>
+<h3>Что исправлено по сравнению с исходным сценарием</h3>
+<ul>
+<li>Удалён отдельный урок про необязательный URL: теперь это часть урока FastAPI, где естественно объяснять request body.</li>
+<li>Убрано дублирование FastAPI-реализаций с разными файлами. Вся программа развивается в одном <code>main.py</code>.</li>
+<li>Удалены инструкции создавать <code>inspect_stream.py</code>, <code>schemas.py</code> и <code>server.py</code>.</li>
+<li>Убрано повторное выполнение retrieval после streaming: sources берутся из <code>updates</code> того же запуска графа.</li>
+<li>Уточнено описание <code>values</code>: не обещаем отдельное начальное пустое состояние.</li>
+<li>Убрано категоричное утверждение, что <code>streaming=True</code> всегда обязательно и само по себе гарантирует токены; добавлена проверка поддержки backend.</li>
+<li>Исправлена асинхронность FastAPI: синхронные <code>invoke()</code> и индексация обслуживаются обычными <code>def</code> routes; async route оставлен для async SSE generator.</li>
+<li>Индексация возвращает число chunks этой операции, а не приватный счётчик Chroma.</li>
+<li>Добавлены HTTP-статусы 422/500 и безопасная обработка исключений.</li>
+<li>Добавлены ограничения <code>top_k</code> и его передача в retrieval.</li>
+<li>В SSE добавлены именованные события <code>token</code>, <code>sources</code>, <code>done</code>, <code>error</code>; убран самодельный sentinel <code>[DONE]</code>.</li>
+<li>Уточнено ограничение EventSource: только GET, без JSON body. Для POST показан fetch + ReadableStream.</li>
+<li>Добавлены заметки о disconnect, proxy buffering, timeout и SSRF для произвольного URL.</li>
+</ul>
+<h3>Контрольный чек-лист преподавателя</h3>
+<ul>
+<li>Ученик объясняет разницу между <code>values</code>, <code>updates</code> и <code>messages</code>.</li>
+<li>Ученик может отфильтровать токены по <code>langgraph_node == "generate"</code>.</li>
+<li>Sources извлекаются из <code>retrieve</code> update без второго вызова поиска.</li>
+<li>CLI выводит токены постепенно.</li>
+<li><code>/ask</code> валидирует вход и возвращает answer + sources.</li>
+<li><code>/index</code> использует дефолтный URL или URL из тела запроса.</li>
+<li>Синхронные вызовы не блокируют event loop внутри <code>async def</code> route.</li>
+<li><code>/stream</code> отправляет валидные SSE события и проверяется через <code>curl -N</code>.</li>
+<li>Ученик понимает, почему fetch нужен для POST streaming, а EventSource не подходит напрямую.</li>
+</ul>
+<h3>Что намеренно оставлено за рамками</h3>
+<p>Авторизация, полноценная dependency injection, Docker, Redis, Postgres, фоновые очереди, multi-tenant isolation и production-grade SSRF resolver — важные темы, но они размоют фокус этого курса. Их лучше вынести в отдельный курс по production deployment.</p>
+<div class="callout good"><strong>Рекомендуемый финальный акцент:</strong> «Streaming — это не один флаг. Это цепочка: модель должна выдавать chunks → LangGraph должен отдавать нужные события → API должен передать их без буферизации → клиент должен правильно разобрать поток».</div>
+</section>
+</div>
+<footer>FastAPI for AI Engineers · Учебный сценарий и кодовые вставки. Примеры рассчитаны на существующий RAG-проект с LangGraph, LangChain и Chroma; названия исходных функций и полей состояния нужно согласовать с вашим базовым файлом.</footer>
+</main>
+</div>
+<script>
+const tabs=[...document.querySelectorAll('.tab')];
+tabs.forEach(tab=>tab.addEventListener('click',()=>{
+  tabs.forEach(t=>t.setAttribute('aria-selected',String(t===tab)));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById(tab.getAttribute('aria-controls')).classList.add('active');
+}));
+document.querySelectorAll('.copy').forEach(btn=>btn.addEventListener('click',async()=>{
+  const code=btn.parentElement.nextElementSibling?.innerText || '';
+  try{await navigator.clipboard.writeText(code);btn.textContent='Скопировано';setTimeout(()=>btn.textContent='Копировать',1200)}
+  catch{btn.textContent='Выделите код вручную'}
+}));
+const navLinks=[...document.querySelectorAll('aside a')];
+const sections=navLinks.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
+if('IntersectionObserver' in window){
+ const observer=new IntersectionObserver(entries=>{
+  entries.forEach(entry=>{if(entry.isIntersecting){
+   navLinks.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+entry.target.id));
+  }});
+ },{rootMargin:'-20% 0px -70% 0px'});
+ sections.forEach(s=>observer.observe(s));
+}
+</script>
+</body></html>

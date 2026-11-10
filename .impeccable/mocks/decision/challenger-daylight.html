@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Daylight Section — sketch</title>
+<style>
+  html, body { margin: 0; height: 900px; overflow: hidden; background: #f7f4ef; color: #1a1a1a;
+    font: 400 17px/1.5 "Iowan Old Style", "Palatino Linotype", Palatino, serif; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 28px 36px; display: grid; grid-template-columns: 200px 1fr; gap: 28px; }
+  .rail { border-left: 10px solid #1a1a1a; padding-left: 14px; }
+  .rail div { font: 600 12px/1.3 ui-monospace, Menlo, monospace; color: #2c4a6e; margin: 10px 0; }
+  .rail .on { color: #c4a574; }
+  .main { background: #fffef9; min-height: 820px; padding: 28px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.06); }
+  .promo { background: linear-gradient(90deg, rgba(196,165,116,.25), transparent); padding: 12px 14px; margin-bottom: 18px; }
+  .promo strong { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 14px; }
+  .tabs { display: flex; gap: 12px; font: 600 12px ui-sans-serif, system-ui, sans-serif; margin-bottom: 20px; color: #2c4a6e; }
+  .tabs .on { border-bottom: 2px solid #c4a574; }
+  h1 { font-size: 34px; margin: 0 0 8px; letter-spacing: -0.02em; }
+  .lead { color: #2c4a6e; margin: 0 0 22px; max-width: 60ch; font-size: 16px; }
+  .say { margin: 0 0 16px; }
+  .say b { display: block; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #c4a574; }
+  .cb { background: #1a1a1a; color: #f7f4ef; padding: 16px; font: 13px/1.5 ui-monospace, Menlo, monospace; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <aside class="rail">
+      <div class="on">Intro</div><div>Block 0</div><div>Block 1</div><div>Block 2</div>
+    </aside>
+    <div class="main">
+      <div class="promo"><strong>Advanced course — limited coupon</strong> · PROMO_CODE_HERE</div>
+      <div class="tabs"><span>Basics</span><span class="on">LLM Agent</span><span>Streaming</span><span>FastAPI</span><span>Advanced</span></div>
+      <h1>Video script: a RAG system in Python</h1>
+      <p class="lead">LangChain · LangGraph · ChromaDB · Ollama. Read the “Narration” blocks in order.</p>
+      <div class="say"><b>Narration</b><p>Imagine you ask ChatGPT about your internal documents and it answers confidently…</p></div>
+      <div class="cb">llm = ChatOpenAI(model="llama3.1", streaming=True)</div>
+    </div>
+  </div>
+</body>
+</html>
