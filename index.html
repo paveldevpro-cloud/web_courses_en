@@ -3177,7 +3177,375 @@ def ask_endpoint(request: AskRequest):
       </div>
     </div>
 
-    <script>
+    
+<div
+      class="tab-panel"
+      id="panel-advanced"
+      role="tabpanel"
+      aria-labelledby="tab-advanced"
+      hidden
+    >
+      <div class="page">
+        <aside class="toc" id="toc-advanced">
+          <div class="toc-bar">
+            <button
+              type="button"
+              id="toc-advanced-toggle"
+              aria-expanded="false"
+              aria-controls="nav-advanced"
+            >
+              Contents
+            </button>
+            <button
+              type="button"
+              id="toc-advanced-close"
+              aria-label="Close contents"
+            >
+              Close
+            </button>
+          </div>
+          <nav id="nav-advanced" aria-label="SSE advanced sections"></nav>
+        </aside>
+        <main class="content">
+          <h1>Advanced: Server-Sent Events to the browser</h1>
+          <p class="lead">
+            Deliver generation events over HTTP. Tokens, sources, done, and
+            error — without WebSocket.
+          </p>
+          <section id="sse-goal">
+            <h2>Block 1. Lesson goal</h2>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                <strong>Goal:</strong> send generation events to the browser
+                over HTTP without changing the RAG pipeline.
+              </p>
+              <p>
+                In the FastAPI lesson the frontend got JSON when the answer was
+                ready. Now picture a chat UI: the user sends a question and text
+                starts appearing almost immediately. We do not need WebSocket
+                for one-way data. Standard HTTP streaming with Server-Sent
+                Events is enough.
+              </p>
+            </div>
+          </section>
+
+          <section id="sse-compare">
+            <h2>Block 2. SSE vs JSON vs WebSocket</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Approach</th>
+                  <th>Exchange model</th>
+                  <th>When it fits</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Plain JSON</td>
+                  <td>One request → one finished response</td>
+                  <td>Simple APIs where waiting is fine</td>
+                </tr>
+                <tr>
+                  <td>SSE</td>
+                  <td>Server → client event stream over HTTP</td>
+                  <td>Tokens, progress, notifications</td>
+                </tr>
+                <tr>
+                  <td>WebSocket</td>
+                  <td>Bidirectional persistent channel</td>
+                  <td>Interactive two-way realtime sessions</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                SSE is a text format. Events are separated by a blank line. The
+                <code>data:</code> field holds the payload; optional
+                <code>event:</code> sets the event type.
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">text</span>
+              <pre><code>event: token
+data: {"token":"Hello"}
+
+event: token
+data: {"token":" there"}
+
+event: sources
+data: {"items":["https://example.com/"]}
+
+event: done
+data: {}</code></pre>
+            </div>
+          </section>
+
+          <section id="sse-endpoint">
+            <h2>Block 3. Add POST /stream</h2>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                Add imports, then implement the endpoint. As in the CLI lesson,
+                stream <code>messages</code> and <code>updates</code> together
+                so retrieval does not run twice.
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code>import json
+from fastapi import Request
+from fastapi.responses import StreamingResponse</code></pre>
+            </div>
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code>class StreamRequest(BaseModel):
+    question: str = Field(min_length=1, max_length=2000)
+    top_k: int = Field(default=3, ge=1, le=10)
+
+
+def sse_event(event: str, data: dict) -> str:
+    payload = json.dumps(data, ensure_ascii=False)
+    return f"event: {event}\ndata: {payload}\n\n"
+
+
+@app.post("/stream")
+async def stream_answer(payload: StreamRequest, request: Request):
+    async def event_generator():
+        sources: list[str] = []
+        try:
+            state = {
+                "question": payload.question,
+                "context": "",
+                "sources": [],
+                "answer": "",
+                "top_k": payload.top_k,
+            }
+
+            async for mode, chunk in rag_graph.astream(
+                state,
+                stream_mode=["messages", "updates"],
+            ):
+                if await request.is_disconnected():
+                    break
+
+                if mode == "updates":
+                    retrieve_update = chunk.get("retrieve", {})
+                    if retrieve_update:
+                        sources = retrieve_update.get("sources", sources)
+                        yield sse_event(
+                            "sources",
+                            {"items": sources},
+                        )
+
+                elif mode == "messages":
+                    message_chunk, metadata = chunk
+                    if metadata.get("langgraph_node") != "generate":
+                        continue
+
+                    content = message_chunk.content
+                    if isinstance(content, str) and content:
+                        yield sse_event("token", {"token": content})
+
+            yield sse_event("done", {})
+        except Exception:
+            # Details go to server logs; client gets a safe message only.
+            yield sse_event("error", {"message": "Generation failed"})
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
+    )</code></pre>
+            </div>
+            <div class="say">
+              <b class="t">Narration · Line by line</b>
+              <p>
+                The important part is not <code>StreamingResponse</code> itself,
+                but the event generator inside it. It runs the graph and yields
+                SSE strings. <code>token</code> carries answer chunks,
+                <code>sources</code> carries links, <code>done</code> means a
+                clean finish, <code>error</code> is a safe failure message. We
+                also check client disconnect so we stop work when the browser
+                closes the connection.
+              </p>
+            </div>
+            <div class="say">
+              <b class="t">Warning</b>
+              <p>
+                In this example <code>/stream</code> is POST with a JSON body.
+                Native browser <code>EventSource</code> only supports GET and
+                cannot set an arbitrary body. Use <code>fetch()</code> +
+                <code>ReadableStream</code> for this endpoint — or expose a GET
+                with query params if the question is short enough for a URL.
+              </p>
+            </div>
+          </section>
+
+          <section id="sse-curl">
+            <h2>Block 4. Test the stream from the terminal</h2>
+            <div class="cb">
+              <span class="lang">bash</span>
+              <pre><code>curl -N -X POST http://127.0.0.1:8000/stream \
+  -H "Content-Type: application/json" \
+  -d '{"question":"What is the promo code?","top_k":3}' </code></pre>
+            </div>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                The <code>-N</code> flag disables curl output buffering so
+                events appear immediately.
+              </p>
+            </div>
+          </section>
+
+          <section id="sse-browser">
+            <h2>Block 5. Browser client with fetch + ReadableStream</h2>
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                Teaching snippet for a page with <code>#question</code>,
+                <code>#send</code>, <code>#answer</code>, and
+                <code>#sources</code>. In production prefer a real SSE parser —
+                network chunk boundaries need not match event boundaries.
+              </p>
+            </div>
+            <div class="cb">
+              <span class="lang">javascript</span>
+              <pre><code>const answerEl = document.querySelector("#answer");
+const sourcesEl = document.querySelector("#sources");
+
+async function askWithStream(question) {
+  answerEl.textContent = "";
+  sourcesEl.textContent = "";
+
+  const response = await fetch("http://127.0.0.1:8000/stream", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ question, top_k: 3 }),
+  });
+
+  if (!response.ok || !response.body) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+
+  const reader = response.body
+    .pipeThrough(new TextDecoderStream())
+    .getReader();
+
+  let buffer = "";
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+
+    buffer += value;
+    const events = buffer.split("\n\n");
+    buffer = events.pop() ?? "";
+
+    for (const rawEvent of events) {
+      const eventName = rawEvent.match(/^event: (.+)$/m)?.[1];
+      const dataLine = rawEvent.match(/^data: (.+)$/m)?.[1];
+      if (!eventName || !dataLine) continue;
+
+      const data = JSON.parse(dataLine);
+
+      if (eventName === "token") {
+        answerEl.textContent += data.token;
+      } else if (eventName === "sources") {
+        sourcesEl.textContent = data.items.join("\n");
+      } else if (eventName === "error") {
+        throw new Error(data.message);
+      } else if (eventName === "done") {
+        console.log("Stream completed");
+      }
+    }
+  }
+}</code></pre>
+            </div>
+            <div class="say">
+              <b class="t">Narration · Demo</b>
+              <p>
+                Show curl first: the server sends separate events. Then show the
+                browser: text accumulates in the answer element, links arrive as
+                their own event. Emphasize: this is not WebSocket and not
+                frontend-framework magic — it is a normal HTTP response the
+                server keeps writing to.
+              </p>
+            </div>
+          </section>
+
+          <section id="sse-production">
+            <h2>Block 6. Production notes and closing</h2>
+            <ul>
+              <li>
+                <strong>Disconnect:</strong> stop generation when the client
+                leaves; check how your LangGraph/backend version cancels the
+                task.
+              </li>
+              <li>
+                <strong>Proxy buffering:</strong> reverse proxies may buffer;
+                configure them for SSE. <code>X-Accel-Buffering: no</code> helps
+                with Nginx.
+              </li>
+              <li>
+                <strong>Timeouts:</strong> align app, proxy, and client
+                timeouts.
+              </li>
+              <li>
+                <strong>Errors:</strong> after streaming starts you cannot
+                reliably change the HTTP status — send an <code>error</code> SSE
+                event.
+              </li>
+              <li>
+                <strong>Auth / CORS:</strong> configure them if frontend and API
+                are on different origins.
+              </li>
+              <li>
+                <strong>EventSource:</strong> auto-reconnects, but that does not
+                appear automatically with fetch — the fetch client must decide
+                about retries.
+              </li>
+            </ul>
+            <div class="say">
+              <b class="t">Narration · Course closing</b>
+              <p>
+                We went from a local RAG script to an HTTP API with streaming
+                generation. The key engineering idea is layering: LangGraph
+                reports execution events, FastAPI defines the HTTP contract, SSE
+                delivers events to the browser. You no longer have only a chat
+                script — you have a basic backend you can attach to a UI.
+              </p>
+            </div>
+            <div class="say">
+              <b class="t">Bonus homework</b>
+              <p>
+                Add a Stop button that cancels the fetch with
+                <code>AbortController</code>, and show a clear “connection
+                aborted” state.
+              </p>
+            </div>
+            <div class="say">
+              <b class="t">Teacher checklist</b>
+              <p>
+                Student can explain <code>values</code> / <code>updates</code> /
+                <code>messages</code>; filter tokens by
+                <code>langgraph_node == "generate"</code>; collect sources from
+                <code>retrieve</code> updates without a second search; stream
+                tokens in the CLI; validate <code>/ask</code>; run
+                <code>/stream</code> with <code>curl -N</code>; explain why
+                fetch is needed for POST streaming.
+              </p>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+<script>
       (function () {
         var tabButtons = Array.prototype.slice.call(
           document.querySelectorAll('.course-tabs [role="tab"]'),
