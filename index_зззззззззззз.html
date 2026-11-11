@@ -743,18 +743,7 @@
           tabindex="-1"
           data-tab="streams"
         >
-          LangGraph streams
-        </button>
-        <button
-          type="button"
-          role="tab"
-          id="tab-cli"
-          aria-controls="panel-cli"
-          aria-selected="false"
-          tabindex="-1"
-          data-tab="cli"
-        >
-          CLI streaming
+          Streaming: Modes &amp; CLI
         </button>
         <button
           type="button"
@@ -808,8 +797,7 @@
           </button>
           <nav class="home-path" aria-label="Browse modules">
             <button type="button" data-go-tab="basics">Basics</button>
-            <button type="button" data-go-tab="streams">Streams</button>
-            <button type="button" data-go-tab="cli">CLI</button>
+            <button type="button" data-go-tab="streams">Streaming</button>
             <button type="button" data-go-tab="fastapi">FastAPI</button>
             <button type="button" data-go-tab="advanced">SSE</button>
           </nav>
@@ -1873,7 +1861,6 @@ uv run main.py         # Q&amp;A
         </main>
       </div>
     </div>
-
     <div
       class="tab-panel"
       id="panel-streams"
@@ -1900,15 +1887,18 @@ uv run main.py         # Q&amp;A
               Close
             </button>
           </div>
-          <nav id="nav-streams" aria-label="LangGraph streaming sections"></nav>
+          <nav
+            id="nav-streams"
+            aria-label="Streaming modes and CLI sections"
+          ></nav>
         </aside>
 
         <main class="content">
           <h1>LangGraph Streaming: Modes & CLI</h1>
           <p class="lead">
-            LangGraph · Ollama · Intermediate. Understand the three streaming
-            modes, inspect graph events, and build a CLI that streams tokens
-            while collecting sources in a single graph run.
+            LangGraph · Ollama · Intermediate. Learn the three streaming modes,
+            see what each one returns for our RAG graph, and build a CLI that
+            streams the answer and collects sources in a single graph run.
           </p>
 
           <!-- BLOCK 0 -->
@@ -1923,22 +1913,27 @@ uv run main.py         # Q&amp;A
                 and generates answers.
               </p>
               <p>
-                But there is one limitation. When we call the graph with
-                <code>invoke()</code>, we receive the final result only after
-                the entire execution is complete. The user has to wait while
-                retrieval and generation happen in the background.
+                But there is one problem. When we call the graph with
+                <code>invoke()</code>, we get the result only after everything
+                is finished. The user stares at an empty terminal and waits.
+              </p>
+              <p>In this lesson we fix that in three steps:</p>
+              <p>
+                <strong>1.</strong> We look at the three LangGraph streaming
+                modes and see what each one returns for our graph.
               </p>
               <p>
-                In this lesson, we'll make the application more responsive.
-                First, we'll explore the three main LangGraph streaming modes.
-                Then we'll use them to stream the model's response directly to
-                the terminal while collecting the retrieved sources from the
-                same graph run.
+                <strong>2.</strong> We enable streaming in the model and inspect
+                the chunks.
               </p>
               <p>
-                We won't rewrite the RAG pipeline or create another application.
-                We'll build on top of the code you already have in
-                <code>main.py</code>.
+                <strong>3.</strong> We build a CLI that prints the answer token
+                by token and shows the sources at the end, all from one graph
+                run.
+              </p>
+              <p>
+                We won't rewrite the RAG pipeline or create a new app. We
+                continue in the same <code>main.py</code>.
               </p>
             </div>
           </section>
@@ -1950,57 +1945,66 @@ uv run main.py         # Q&amp;A
             <div class="say">
               <b class="t">Narration</b>
               <p>
-                Before looking at the code, let's understand the user experience
-                we're trying to improve.
+                Before we touch the code, let's see the problem from the user's
+                side.
               </p>
 
               <p>
-                <strong>The first case: Without streaming.</strong>
-                A user enters the question and presses Enter. The terminal
-                remains empty while the application retrieves relevant
-                documents, sends the prompt to the LLM, and waits for the
-                complete response.
+                <strong>Without streaming.</strong>
+                The user types a question and presses Enter. Then nothing
+                happens for a few seconds:
               </p>
+            </div>
 
-              <p>After a few seconds, the entire answer appears at once:</p>
+            <div class="cb">
+              <span class="lang">text</span>
+              <pre><code>Ask a question (or 'exit'): What is the promo code?
 
+... (empty screen, 5 seconds) ...
+
+Answer:
+The promo code is ...</code></pre>
+            </div>
+
+            <div class="say">
+              <b class="t">Narration</b>
               <p>
-                During the waiting period, the user receives no visible
-                feedback. The user cannot tell whether the application is
-                processing the request, stuck, or has stopped working.
-              </p>
-
-              <p>
-                <strong>Let's consider the second case: With streaming.</strong>
-                The user enters the same question and presses Enter. This time,
-                the response starts appearing as soon as the model produces its
-                first tokens:
-                <em>"The promo code..."</em>
-              </p>
-
-              <p>
-                The rest of the answer gradually appears on the screen. The user
-                can already start reading while the model is still generating
-                the remaining text.
+                The user can't tell if the app is working, stuck, or crashed.
               </p>
 
               <p>
-                Here's the important distinction: streaming does not necessarily
-                make the model generate the answer faster. The total generation
-                time may remain the same. What changes is the time to first
-                visible output — and therefore the user's perception of latency.
+                <strong>With streaming.</strong>
+                Same question, but now the answer starts appearing almost
+                immediately:
+              </p>
+            </div>
+
+            <div class="cb">
+              <span class="lang">text</span>
+              <pre><code>Answer:
+The promo code...</code></pre>
+            </div>
+
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                The rest of the text keeps appearing, and the user can already
+                read while the model is still generating.
               </p>
 
               <p>
-                Instead of waiting several seconds without feedback, the user
-                sees that the application is working. The interaction feels more
-                responsive and natural.
+                Here is the important part: streaming does not make the model
+                faster. The total generation time stays the same. What changes
+                is the <strong>time to first visible output</strong>, and that
+                is what the user feels as speed.
               </p>
 
               <p>
-                That's why streaming matters: it improves the experience of
-                waiting, even when it doesn't reduce the actual processing time.
+                So streaming improves the experience of waiting, even when it
+                doesn't reduce the actual waiting time.
               </p>
+
+              <p>Now let's see how LangGraph gives us this.</p>
             </div>
           </section>
 
@@ -2019,12 +2023,12 @@ uv run main.py         # Q&amp;A
               <tbody>
                 <tr>
                   <td><code>values</code></td>
-                  <td>Full graph state after a step</td>
+                  <td>Full graph state after each step</td>
                   <td>Inspect the complete state</td>
                 </tr>
                 <tr>
                   <td><code>updates</code></td>
-                  <td>Updates returned by individual nodes</td>
+                  <td>Only what each node returned</td>
                   <td>Track what each node changes</td>
                 </tr>
                 <tr>
@@ -2039,69 +2043,105 @@ uv run main.py         # Q&amp;A
               <b class="t">Narration</b>
 
               <p>
-                LangGraph provides three main streaming modes. They expose
-                different parts of the graph's execution.
+                LangGraph has three main streaming modes. Each one shows a
+                different part of what happens inside the graph.
               </p>
 
               <p>
-                <strong><code>values</code> — the full state.</strong>
-                Think of it as a snapshot of the graph's working memory after a
-                step: the question, context, sources, and the answer as it
-                becomes available. It's useful when you want to see how the
-                entire state evolves while the graph runs.
+                Our graph is simple:
+                <code>retrieve</code> → <code>generate</code>. Let's see what
+                each mode would give us.
               </p>
 
               <p>
-                <strong><code>updates</code> — changes made by nodes.</strong>
-                Unlike <code>values</code>, this mode doesn't provide a full
-                snapshot of the graph state. Instead, it shows the updates
-                returned by individual nodes. For our RAG pipeline, this lets us
-                inspect what the <code>retrieve</code> node returns and what the
-                <code>generate</code> node adds.
+                <strong><code>values</code>: the full state.</strong>
+                After each step you get a snapshot of the whole state:
+                <code>question</code>, <code>context</code>,
+                <code>sources</code>, <code>answer</code>. Good for debugging,
+                because you see how the state fills up step by step.
+              </p>
+
+              <p>
+                <strong><code>updates</code>: only the changes.</strong>
+                No snapshot here. You get just what a node returned, labeled
+                with the node name. First what <code>retrieve</code> returned
+                (<code>context</code> and <code>sources</code>), then what
+                <code>generate</code> returned (<code>answer</code>).
               </p>
 
               <p>
                 <strong
-                  ><code>messages</code> — model output as it is
+                  ><code>messages</code>: the model's output as it's
                   generated.</strong
                 >
-                This mode streams message chunks together with metadata. It is
-                especially useful for chat interfaces and terminal applications
-                where users should see the answer appear progressively instead
-                of waiting for the complete response.
+                You get small chunks of text plus metadata, for example which
+                node produced the chunk. This is the mode for chat UIs and
+                terminal apps.
               </p>
 
               <p>
-                The key difference is simple: use <code>values</code> to inspect
-                the full state, <code>updates</code> to track node changes, and
-                <code>messages</code> to stream model output.
+                Rule of thumb: <code>values</code> to see everything,
+                <code>updates</code> to see who changed what,
+                <code>messages</code> to stream text.
+              </p>
+
+              <p>
+                Reading about it is one thing. Let's run all three and look at
+                the real output.
               </p>
             </div>
           </section>
 
           <!-- BLOCK 3 -->
           <section id="streams-inspector">
-            <h2>Block 3. Inspect streaming events in main.py</h2>
+            <h2>Block 3. Enable and inspect model streaming</h2>
 
             <div class="say">
               <b class="t">Narration</b>
               <p>
-                Let's see what these modes actually return. We'll start by
-                adding a small inspection function to our existing
-                <code>main.py</code>.
+                First, one small change. LangGraph streams graph events, but the
+                model integration also has to support streaming. Let's enable it
+                explicitly, so there are no surprises with Ollama.
               </p>
               <p>
-                The <code>mode</code> parameter lets us switch between
-                <code>values</code> and <code>updates</code> without changing
-                the rest of the function.
+                Go to the original <code>llm = ChatOpenAI(...)</code> at the top
+                of <code>main.py</code> and add one line:
+                <code>streaming=True</code>. Don't create a second LLM instance.
               </p>
             </div>
 
             <div class="cb">
               <span class="lang">python</span>
-              <pre><code>import asyncio
+              <pre><code>llm = ChatOpenAI(
+    model=os.getenv("CHAT_MODEL", "llama3.1"),
+    base_url=os.getenv("LLM_API_BASE", "http://127.0.0.1:11434/v1"),
+    api_key=os.getenv("LLM_API_KEY", "ollama"),
+    temperature=0,
+    streaming=True,  # NEW
+)</code></pre>
+            </div>
 
-async def inspect_stream(question: str, mode: str = "updates") -> None:
+            <div class="say">
+              <b class="t">Narration</b>
+              <p>
+                You may ask: our <code>generate</code> node still calls
+                <code>llm.invoke()</code>. Why would that stream?
+              </p>
+              <p>
+                Because LangGraph hooks into the model call inside the node and
+                forwards tokens as they arrive. The node itself still finishes
+                with the full answer, but we get the tokens on the way. So we
+                don't need to change the <code>generate</code> node at all.
+              </p>
+              <p>
+                Now let's look at the modes. Here is one small function that
+                works for both <code>values</code> and <code>updates</code>.
+              </p>
+            </div>
+
+            <div class="cb">
+              <span class="lang">python</span>
+              <pre><code>async def inspect_stream(question: str, mode: str = "updates") -> None:
     initial_state = {
         "question": question,
         "context": "",
@@ -2125,48 +2165,71 @@ async def inspect_stream(question: str, mode: str = "updates") -> None:
             <div class="say">
               <b class="t">Narration · values</b>
               <p>
-                Start with <code>values</code>. Each event gives us the graph's
-                current state after a step. You can inspect fields such as
-                <code>question</code>, <code>context</code>,
-                <code>sources</code>, and <code>answer</code>.
+                Start with <code>values</code>. The first event is the initial
+                state we passed in. Then, after <code>retrieve</code>,
+                <code>context</code> and <code>sources</code> are filled. After
+                <code>generate</code>, <code>answer</code> is filled too
+                (shortened output):
               </p>
+            </div>
+
+            <div class="cb">
+              <span class="lang">text</span>
+              <pre><code>--- values ---
+{'question': 'What is the promo code?', 'context': '', 'sources': [], 'answer': ''}
+
+--- values ---
+{'question': '...', 'context': '...', 'sources': ['https://aismartcode.vercel.app/'], 'answer': ''}
+
+--- values ---
+{'question': '...', 'context': '...', 'sources': [...], 'answer': 'The promo code is ...'}</code></pre>
+            </div>
+
+            <div class="say">
+              <b class="t">Narration · values</b>
               <p>
-                This is useful when debugging the pipeline because you can see
-                how the state changes as the graph moves from retrieval to
-                generation.
+                Every event is the whole state. That's handy when you debug the
+                pipeline.
               </p>
             </div>
 
             <div class="say">
               <b class="t">Narration · updates</b>
               <p>
-                Now let's look at <code>updates</code>. Unlike
-                <code>values</code>, it doesn't provide a full snapshot of the
-                graph state. Instead, it shows the changes returned by each
-                node, so you can track what was updated at each step.
+                Now switch to <code>updates</code>. Here we see only what each
+                node returned, and the key is the node name:
+              </p>
+            </div>
+
+            <div class="cb">
+              <span class="lang">text</span>
+              <pre><code>--- updates ---
+{'retrieve': {'context': '...', 'sources': ['https://aismartcode.vercel.app/']}}
+
+--- updates ---
+{'generate': {'answer': 'The promo code is ...'}}</code></pre>
+            </div>
+
+            <div class="say">
+              <b class="t">Narration · updates</b>
+              <p>
+                Remember this shape: <code>{'retrieve': {...}}</code>. We will
+                use it in the next block to grab the sources.
               </p>
               <p>
-                For our RAG pipeline, this is particularly useful: we can
-                inspect the output of <code>retrieve</code> and then see what
-                <code>generate</code> adds. There's less noise when we're
-                interested in the work performed by a specific node.
+                But notice: <code>generate</code> gives us the answer only once,
+                when the whole node is done. Neither mode shows the text while
+                it's being generated. For that we need the third mode.
               </p>
             </div>
 
             <div class="say">
               <b class="t">Narration · messages</b>
               <p>
-                Finally, let's inspect <code>messages</code>. This mode gives us
-                model message chunks together with metadata.
-              </p>
-              <p>
-                The metadata includes <code>langgraph_node</code>, which tells
-                us which graph node produced the chunk. We can use this
-                information to keep only the output from our
-                <code>generate</code> node.
-              </p>
-              <p>
-                This is the mode we'll use to display the answer progressively.
+                Let's inspect <code>messages</code>. Here we get model chunks
+                together with metadata. The metadata has a field called
+                <code>langgraph_node</code>, which tells us which node produced
+                the chunk.
               </p>
             </div>
 
@@ -2193,17 +2256,51 @@ async def inspect_stream(question: str, mode: str = "updates") -> None:
             </div>
 
             <div class="say">
+              <b class="t">Narration · Walkthrough</b>
+              <p>
+                Run it. Instead of one complete answer, you get small pieces,
+                usually a token or a few characters each:
+              </p>
+            </div>
+
+            <div class="cb">
+              <span class="lang">text</span>
+              <pre><code>'The' | node = generate
+' promo' | node = generate
+' code' | node = generate
+...</code></pre>
+            </div>
+
+            <div class="say">
+              <b class="t">Narration · Walkthrough</b>
+              <p>
+                Every chunk says <code>node = generate</code>. In our graph only
+                <code>generate</code> calls the model, so the filter by node
+                name changes nothing today. But it's a good habit: if you later
+                add another node with an LLM (say, query rewriting), you won't
+                accidentally print its output to the user.
+              </p>
+            </div>
+
+            <div class="say">
               <b class="t">Important</b>
               <p>
-                Notice that the event structure depends on the streaming mode.
-                With a single <code>messages</code> mode, we receive a
+                The shape of an event depends on how you call
+                <code>astream()</code>:
+              </p>
+              <p>
+                <strong>One mode</strong>
+                (<code>stream_mode="messages"</code>): you get the payload
+                directly. For <code>messages</code> it's a
                 <code>(message_chunk, metadata)</code> pair.
               </p>
               <p>
-                With multiple stream modes enabled together, LangGraph returns
-                events in the form of <code>(mode, payload)</code>. We'll use
-                that format in the next block.
+                <strong>Several modes</strong>
+                (<code>stream_mode=["messages", "updates"]</code>): every event
+                is a <code>(mode, payload)</code> pair, so you know which mode
+                it came from.
               </p>
+              <p>We need the second form right now.</p>
             </div>
           </section>
 
@@ -2213,21 +2310,30 @@ async def inspect_stream(question: str, mode: str = "updates") -> None:
 
             <div class="say">
               <b class="t">Narration</b>
-              <p>Now let's combine what we've learned.</p>
+              <p>Now we put it together. We want two things at once:</p>
               <p>
-                Our goal is to stream the answer to the terminal while also
-                collecting the sources returned by the retrieval node.
-              </p>
-              <p>
-                We could run retrieval separately to get the sources, but that
-                would mean doing the same work twice. Instead, we'll ask
-                LangGraph for two streaming modes in one graph execution:
-                <code>messages</code> and <code>updates</code>.
-              </p>
-              <p>
-                We'll use <code>messages</code> to receive generated text and
-                <code>updates</code> to capture the sources returned by the
+                the answer streaming to the terminal, and the sources from the
                 <code>retrieve</code> node.
+              </p>
+              <p>
+                The easy way is to call <code>retrieve</code> a second time,
+                just to get the sources. But that means doing the same vector
+                search twice. We don't need that.
+              </p>
+              <p>
+                Instead, we ask for two modes in one run, and each one does its
+                own job:
+              </p>
+              <p>
+                <code>messages</code> gives us the text to print,
+                <code>updates</code> gives us the <code>sources</code> from
+                <code>retrieve</code>.
+              </p>
+              <p>
+                If your <code>main.py</code> already has an older
+                <code>ask_question_stream</code> (the one that calls
+                <code>retrieve</code> again), delete it. This version replaces
+                it.
               </p>
             </div>
 
@@ -2250,6 +2356,7 @@ async def inspect_stream(question: str, mode: str = "updates") -> None:
     ):
         if mode == "updates":
             retrieve_update = payload.get("retrieve", {})
+
             if retrieve_update:
                 sources = retrieve_update.get("sources", sources)
 
@@ -2266,56 +2373,39 @@ async def inspect_stream(question: str, mode: str = "updates") -> None:
                 answer_parts.append(content)
 
     print()
+
     return "".join(answer_parts), sources</code></pre>
             </div>
 
             <div class="say">
               <b class="t">Narration · Walkthrough</b>
-              <p>Let's walk through the function.</p>
+              <p>Let's go through it in three parts.</p>
               <p>
-                First, we prepare the initial graph state and create two lists:
-                <code>answer_parts</code> for the generated text and
-                <code>sources</code> for the retrieved document references.
+                <strong>Setup.</strong> We prepare the initial state and two
+                lists: <code>answer_parts</code> for the text and
+                <code>sources</code> for the document references.
               </p>
               <p>
-                Then we call <code>rag_graph.astream()</code> with both
-                streaming modes enabled.
+                <strong><code>updates</code> events.</strong> We look for the
+                <code>retrieve</code> key, the same shape we saw in the previous
+                block, and take its <code>sources</code>.
               </p>
               <p>
-                When the event mode is <code>updates</code>, we look for the
-                <code>retrieve</code> node and extract its sources. This assumes
-                that your retrieval node returns a <code>sources</code> field in
-                its state update.
-              </p>
-              <p>
-                When the event mode is <code>messages</code>, we inspect the
-                metadata and ignore chunks that were not produced by
-                <code>generate</code>. For each text chunk, we print it
-                immediately using <code>flush=True</code> and save it in
+                <strong><code>messages</code> events.</strong> We skip every
+                chunk that didn't come from <code>generate</code>. For the rest,
+                we print the text right away with
+                <code>flush=True</code> (otherwise Python may hold the text in a
+                buffer and the effect is lost) and save it in
                 <code>answer_parts</code>.
               </p>
               <p>
-                At the end, we join the chunks into one complete answer and
-                return it together with the sources.
+                At the end we join the chunks into the full answer and return it
+                together with the sources. We don't print the full answer again,
+                but returning it costs nothing and will be useful later.
               </p>
               <p>
-                One graph run gives us both the streamed answer and the source
-                information. No second retrieval call is needed.
-              </p>
-            </div>
-
-            <div class="say">
-              <b class="t">Important</b>
-              <p>
-                This example assumes that your <code>retrieve</code> node
-                returns a field named <code>sources</code>. If your state uses a
-                different field name or your node returns a different structure,
-                adjust the extraction accordingly.
-              </p>
-              <p>
-                Also, when using multiple stream modes, remember that each event
-                is a <code>(mode, payload)</code> pair. With a single
-                <code>messages</code> mode, the event structure is different.
+                One graph run gives us both the streamed answer and the sources.
+                No second retrieval.
               </p>
             </div>
           </section>
@@ -2327,202 +2417,101 @@ async def inspect_stream(question: str, mode: str = "updates") -> None:
             <div class="say">
               <b class="t">Narration</b>
               <p>
-                The streaming function is ready. Now let's connect it to the
-                command-line interface.
+                The function is ready. Now let's plug it into the CLI we already
+                have.
               </p>
               <p>
-                We'll ask the user for a question, run our asynchronous
-                function, and print the sources after the answer has finished
-                streaming.
+                We keep the same loop. The only change is that we replace the
+                synchronous <code>ask_question()</code> call with our async
+                function, and print the sources after the answer is finished.
+                <code>asyncio</code> is already imported at the top of
+                <code>main.py</code>.
+              </p>
+              <p>
+                The old <code>ask_question()</code> function stays in the file.
+                It's useful if you want to compare the two behaviors.
               </p>
             </div>
 
             <div class="cb">
               <span class="lang">python</span>
               <pre><code>if __name__ == "__main__":
-    question = input("Ask a question (or 'exit'): ").strip()
 
-    if question.lower() not in {"exit", "quit"} and question:
-        print("\nAnswer:")
+    if len(sys.argv) > 1 and sys.argv[1] == "index":
+        index_documents()
 
-        answer, sources = asyncio.run(
-            ask_question_stream(question)
-        )
+    else:
+        if vector_store._collection.count() == 0:
+            print("No indexed documents. Run uv run main.py index")
+            sys.exit(1)
 
-        print("\nSources:")
-        for source in sources:
-            print(f"- {source}")</code></pre>
+        while True:
+            question = input("\nAsk a question (or 'exit'): ").strip()
+
+            if question.lower() in {"exit", "quit"}:
+                break
+
+            if question:
+                print("\nAnswer:")
+
+                # NEW: streaming instead of ask_question(question)
+                answer, sources = asyncio.run(ask_question_stream(question))
+
+                print("\nSources:")
+                for source in sources:
+                    print(f"- {source}")</code></pre>
             </div>
 
             <div class="say">
               <b class="t">Narration · Demo</b>
               <p>
-                Run the application and ask the same question we used earlier.
-                This time, the answer should appear progressively in the
-                terminal. Once generation is complete, the application prints
-                the sources used to prepare the response.
+                Run the app and ask the same question as before: "What is the
+                promo code?"
               </p>
               <p>
-                Notice that we didn't need a separate retrieval call to display
-                the sources. We collected them from the same graph execution.
+                Now the answer appears progressively. When it's finished, the
+                sources are printed below.
               </p>
               <p>
-                Our CLI is now a streaming client for the RAG application.
-                Later, we'll reuse the same idea when we expose the application
-                through FastAPI — except that the generated events will be sent
-                to an HTTP client instead of being printed in the terminal.
-              </p>
-            </div>
-          </section>
-
-          <!-- BLOCK 6 -->
-          <section id="cli-model">
-            <h2>Block 6. Check model streaming support</h2>
-
-            <div class="say">
-              <b class="t">Narration</b>
-              <p>
-                There's one more important detail: LangGraph can stream events
-                from the graph, but the underlying model integration must also
-                support streaming for us to receive generated text
-                progressively.
+                And remember: we didn't make a separate retrieval call.
+                Everything came from one graph run.
               </p>
               <p>
-                For LangChain's OpenAI-compatible client, streaming is commonly
-                enabled with <code>streaming=True</code>. However, this is not a
-                universal switch that guarantees streaming with every backend.
-              </p>
-              <p>
-                Make sure your Ollama or OpenAI-compatible endpoint supports
-                streaming and that your installed integration forwards the
-                streaming request correctly.
-              </p>
-            </div>
-
-            <div class="cb">
-              <span class="lang">python</span>
-              <pre><code>llm = ChatOpenAI(
-    model=os.getenv("CHAT_MODEL", "llama3.1"),
-    base_url=os.getenv("LLM_API_BASE", "http://127.0.0.1:11434/v1"),
-    api_key=os.getenv("LLM_API_KEY", "ollama"),
-    temperature=0,
-    streaming=True,
-)</code></pre>
-            </div>
-          </section>
-
-          <!-- BLOCK 7 -->
-          <section id="cli-ttft">
-            <h2>Block 7. Measure TTFT, not only total time</h2>
-
-            <div class="say">
-              <b class="t">Narration</b>
-              <p>
-                We know that streaming makes the application feel more
-                responsive. But how can we measure that improvement?
-              </p>
-              <p>
-                One useful metric is <strong>TTFT</strong>, or time to first
-                token. It measures how long the application takes to produce the
-                first visible piece of the model's response.
-              </p>
-              <p>
-                We should also measure total response time. Comparing these two
-                values helps us understand the difference between starting to
-                receive output earlier and completing the entire response
-                faster.
-              </p>
-            </div>
-
-            <div class="cb">
-              <span class="lang">python</span>
-              <pre><code>import time
-
-async def timed_stream(question: str) -> None:
-    started = time.perf_counter()
-    first_token_at = None
-
-    state = {
-        "question": question,
-        "context": "",
-        "sources": [],
-        "answer": "",
-    }
-
-    async for chunk, metadata in rag_graph.astream(
-        state,
-        stream_mode="messages",
-    ):
-        if metadata.get("langgraph_node") != "generate":
-            continue
-
-        if not chunk.content:
-            continue
-
-        if first_token_at is None:
-            first_token_at = time.perf_counter()
-            print(f"\nTTFT: {first_token_at - started:.2f}s")
-
-        print(chunk.content, end="", flush=True)
-
-    print(f"\nTotal: {time.perf_counter() - started:.2f}s")</code></pre>
-            </div>
-
-            <div class="say">
-              <b class="t">Note</b>
-              <p>
-                This example measures TTFT from the beginning of the graph
-                execution, so the value includes retrieval time. That's useful
-                for understanding the end-to-end experience from the user's
-                perspective.
-              </p>
-              <p>
-                If you want to measure model latency separately, record another
-                timestamp immediately before generation starts.
-              </p>
-            </div>
-
-            <div class="say">
-              <b class="t">Homework</b>
-              <p>
-                Compare <code>invoke()</code> and streaming using the same
-                question. Record both TTFT and total response time.
-              </p>
-              <p>
-                Then try changing the question and compare the results. Does
-                retrieval time have a noticeable effect on TTFT? Does streaming
-                always reduce total response time?
+                Our CLI is now a streaming client for the RAG app. Later we'll
+                use the same idea in FastAPI, except that instead of
+                <code>print()</code> we will send the chunks to an HTTP client.
               </p>
             </div>
           </section>
 
           <!-- SUMMARY -->
           <section id="streams-summary">
-            <h2>Block 8. What we've built</h2>
+            <h2>Block 6. What we've built</h2>
 
             <div class="say">
               <b class="t">Narration</b>
-              <p>Let's recap what we've accomplished.</p>
+              <p>Let's recap.</p>
               <p>
-                First, we explored the three main LangGraph streaming modes:
-                <code>values</code> for the full graph state,
-                <code>updates</code> for node-level changes, and
+                We looked at three streaming modes: <code>values</code> for the
+                full state, <code>updates</code> for node-level changes,
                 <code>messages</code> for model output chunks.
               </p>
               <p>
-                Then we combined <code>messages</code> and <code>updates</code>
-                to build a CLI that streams the answer while collecting sources
-                from the same graph execution.
+                We enabled streaming in <code>ChatOpenAI</code> and inspected
+                the chunks with <code>astream()</code>.
               </p>
               <p>
-                Finally, we introduced TTFT as a way to measure how quickly the
-                user starts receiving a response.
+                We combined <code>messages</code> and <code>updates</code> to
+                build a CLI that streams the answer and collects sources in one
+                graph run.
               </p>
               <p>
-                We now have a better understanding of how LangGraph streaming
-                works and a practical CLI implementation to build on. In the
-                next section, we'll take this application beyond the terminal
-                and expose it through FastAPI.
+                The app already feels much more responsive, and the logic behind
+                it is exactly what we need for the web.
+              </p>
+              <p>
+                In the next section we take this app out of the terminal and
+                expose it through FastAPI.
               </p>
             </div>
           </section>
@@ -3273,7 +3262,6 @@ async function askWithStream(question) {
           basics: document.getElementById("panel-basics"),
           agent: document.getElementById("panel-agent"),
           streams: document.getElementById("panel-streams"),
-          cli: document.getElementById("panel-cli"),
           fastapi: document.getElementById("panel-fastapi"),
           advanced: document.getElementById("panel-advanced"),
         };
@@ -3282,7 +3270,6 @@ async function askWithStream(question) {
           basics: true,
           agent: true,
           streams: true,
-          cli: true,
           fastapi: true,
           advanced: true,
         };
@@ -3319,6 +3306,7 @@ async function askWithStream(question) {
           var h = (location.hash || "").replace(/^#/, "");
           if (h.indexOf("tab-") === 0) {
             var name = h.slice(4);
+            if (name === "cli") name = "streams";
             if (validTabs[name]) return name;
           }
           return null;
@@ -3579,13 +3567,6 @@ async function askWithStream(question) {
         navId: "nav-streams",
         toggleId: "toc-streams-toggle",
         closeId: "toc-streams-close",
-      });
-      initSectionToc({
-        panelId: "panel-cli",
-        tocId: "toc-cli",
-        navId: "nav-cli",
-        toggleId: "toc-cli-toggle",
-        closeId: "toc-cli-close",
       });
       initSectionToc({
         panelId: "panel-fastapi",
